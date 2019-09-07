@@ -11,3 +11,4 @@
 #include "Trampoline.h"
 
 #include "drawdist.h"
+#include "objects.h"
