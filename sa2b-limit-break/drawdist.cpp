@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-float DrawDistance = 30000000;
+float DrawDistance = 30000;
 
 int IsPlayerInsideSphere(NJS_VECTOR *center, float radius) {
 	for (uint8_t player = 0; player < 2; ++player) {
@@ -38,7 +38,7 @@ static void __declspec(naked) ClipObject_()
 }
 
 static int __cdecl SETDistanceCheckThing_r(NJS_VECTOR *from, float x, float y, float z, float range) {
-	return SETDistanceCheckThing(from, x, y, z, DrawDistance);
+	return SETDistanceCheckThing(from, x, y, z, DrawDistance * 1000);
 }
 
 static void __declspec(naked) SETDistanceCheckThing_()
@@ -65,5 +65,19 @@ void DrawDist_Init() {
 }
 
 void DrawDist_OnFrame() {
+	if (GameState == 7 && CurrentLandTable) {
+		if (CurrentLandTable->COLList[0].field_18 != 0xFF) {
+			for (uint16_t col = 0; col < CurrentLandTable->COLCount; ++col) {
+				COL* currentcol = &CurrentLandTable->COLList[col];
+				
+				if (currentcol->Flags & 0x80000000) {
+					currentcol->Radius = DrawDistance * 1000;
+					currentcol->field_14 = 0;
+					currentcol->field_18 = 0;
+				}
+			}
 
+			CurrentLandTable->COLList[0].field_18 = 0xFF;
+		}
+	}
 }
