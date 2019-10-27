@@ -41,9 +41,6 @@
     <ClCompile Include="drawdist.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="..\sa2-mod-loader\libmodutils\Trampoline.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
     <ClCompile Include="objects.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>

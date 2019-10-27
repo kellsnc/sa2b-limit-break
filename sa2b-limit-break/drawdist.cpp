@@ -54,7 +54,10 @@ static void __declspec(naked) SETDistanceCheckThing_()
 		call SETDistanceCheckThing_r
 
 		pop ecx // from
-		add esp, 10h
+		add esp, 4
+		add esp, 4
+		add esp, 4
+		add esp, 4
 		retn
 	}
 }

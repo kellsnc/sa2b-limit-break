@@ -17,8 +17,6 @@ void Objects_Init() {
 
 	WriteData((uint32_t*)0x48894D, SETCount);
 	WriteData((uint32_t*)0x488952, SETCount);
-}
-
-void Objects_OnFrame() {
-
+	WriteData((uint32_t*)0x488BEC, SETCount);
+	WriteData((uint32_t*)0x488BF3, SETCount);
 }
