@@ -116,7 +116,7 @@ void DrawDist_Init() {
 }
 
 void DrawDist_OnFrame() {
-	if (GameState == 7 && CurrentLandTable) {
+	if (GameState == 7 && CurrentLandTable && CurrentLevel != LevelIDs_HiddenBase && CurrentLevel != LevelIDs_HiddenBase2P) {
 		if (CurrentLandTable->COLList[0].field_18 != 0xFF) {
 			for (uint16_t col = 0; col < CurrentLandTable->ChunkModelCount; ++col) {
 				COL* currentcol = &CurrentLandTable->COLList[col];

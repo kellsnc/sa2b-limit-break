@@ -61,7 +61,8 @@ void AddToCollisionList_r(ObjectMaster *a1)
 	float dist = 168100;
 	if (a1->SETData && a1->SETData->field_C) dist = a1->SETData->field_C;
 
-	if (collision && SETDistanceCheckThing(&MainCharObj1[0]->Position, pos->x, pos->y, pos->z, dist)) {
+	if (collision && (SETDistanceCheckThing(&MainCharObj1[0]->Position, pos->x, pos->y, pos->z, dist) ||
+		(MainCharObj1[1] && SETDistanceCheckThing(&MainCharObj1[1]->Position, pos->x, pos->y, pos->z, dist)))) {
 		__asm {
 			mov     eax, esi
 			call    Collision_InitThings
