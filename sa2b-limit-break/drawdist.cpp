@@ -27,6 +27,53 @@ static void __declspec(naked) SETDistanceCheckThing_()
 	}
 }
 
+static const void *const SETDistanceCheckThing2pPtr = (void*)0x4881F0;
+
+static inline bool SETDistanceCheckThing2p(NJS_VECTOR *pos, NJS_VECTOR *p2pos, float x, float y, float z, float dist)
+{
+	bool result;
+	__asm
+	{
+		push[dist]
+		push[z]
+		push[y]
+		push[x]
+		mov ecx, [p2pos]
+		mov eax, [pos]
+		call SETDistanceCheckThing2pPtr
+		add esp, 16
+		mov result, al
+	}
+	return result;
+}
+
+static int __cdecl SETDistanceCheckThing2p_r(NJS_VECTOR* from, NJS_VECTOR* p2pos, float x, float y, float z, float range) {
+	return SETDistanceCheckThing2p(from, p2pos, x, y, z, DrawDistance);
+}
+
+static void __declspec(naked) SETDistanceCheckThing2p_()
+{
+	__asm
+	{
+		push[esp + 10h] // range
+		push[esp + 10h] // z
+		push[esp + 10h] // y
+		push[esp + 10h] // x
+		push ecx // p2pos
+		push eax // from
+
+		call SETDistanceCheckThing2p_r
+
+		pop eax
+		pop ecx // from
+		add esp, 4
+		add esp, 4
+		add esp, 4
+		add esp, 4
+		retn
+	}
+}
+
 static int __cdecl ClipObject_r(ObjectMaster* a1, float dist) {
 	if (a1->SETData && a1->SETData->Flags & 0x8) {
 		return 0;
@@ -36,23 +83,15 @@ static int __cdecl ClipObject_r(ObjectMaster* a1, float dist) {
 	}
 	
 	NJS_VECTOR* pos = &a1->Data1.Entity->Position;
+	if (a1->DisplaySub || !a1->DeleteSub) dist = DrawDistance;
 
-	if (a1->DisplaySub || !a1->DeleteSub) {
-		if (SETDistanceCheckThing(&MainCharObj1[0]->Position, pos->x, pos->y, pos->z, DrawDistance)) {
-			return false;
-		}
+	if (SETDistanceCheckThing(&MainCharObj1[0]->Position, pos->x, pos->y, pos->z, dist) ||
+		(MainCharObj1[1] && SETDistanceCheckThing(&MainCharObj1[1]->Position, pos->x, pos->y, pos->z, dist))) {
+		return false;
+	}
 
-		a1->MainSub = DeleteObject_;
-		return true;
-	}
-	else {
-		if (SETDistanceCheckThing(&MainCharObj1[0]->Position, pos->x, pos->y, pos->z, dist)) {
-			return false;
-		}
-		
-		a1->MainSub = DeleteObject_;
-		return true;
-	}
+	a1->MainSub = DeleteObject_;
+	return true;
 }
 
 static void __declspec(naked) ClipObject_()
@@ -73,6 +112,7 @@ static void __declspec(naked) ClipObject_()
 void DrawDist_Init() {
 	WriteJump((void*)0x488C80, ClipObject_);
 	WriteCall((void*)0x488717, SETDistanceCheckThing_);
+	WriteCall((void*)0x4884D5, SETDistanceCheckThing2p_);
 }
 
 void DrawDist_OnFrame() {
