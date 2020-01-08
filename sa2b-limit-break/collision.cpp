@@ -51,12 +51,17 @@ struct CollisionInfo2
 static const void *const Collision_InitThings = (void*)0x47E6C0;
 
 // Add the object to a collision list for that frame
+// Only if the player is close enough
 void AddToCollisionList_r(ObjectMaster *a1)
 {
 	CollisionInfo2 *collision = (CollisionInfo2*)a1->Data1.Entity->Collision;
 	int count;
 
-	if (collision && IsPlayerInsideSphere(&a1->Data1.Entity->Position, 500)) {
+	NJS_VECTOR* pos = &a1->Data1.Entity->Position;
+	float dist = 168100;
+	if (a1->SETData && a1->SETData->field_C) dist = a1->SETData->field_C;
+
+	if (collision && SETDistanceCheckThing(&MainCharObj1[0]->Position, pos->x, pos->y, pos->z, dist)) {
 		__asm {
 			mov     eax, esi
 			call    Collision_InitThings

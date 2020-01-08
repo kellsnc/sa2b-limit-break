@@ -1,6 +1,5 @@
 #include "stdafx.h"
 
-void Objects_Init();
 void DrawDist_Init();
 void Collision_Init();
 void DrawDist_OnFrame();
@@ -11,7 +10,6 @@ extern "C"
 	{
 		DrawDist_Init();
 		Collision_Init();
-		//Objects_Init();
 	}
 
 	__declspec(dllexport) void OnFrame() {
