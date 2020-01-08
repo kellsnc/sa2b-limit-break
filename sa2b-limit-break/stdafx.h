@@ -11,4 +11,3 @@
 #include "SA2ModLoader.h"
 
 #include "drawdist.h"
-#include "objects.h"

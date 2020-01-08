@@ -1,11 +1,17 @@
 #include "stdafx.h"
 
+void Objects_Init();
+void DrawDist_Init();
+void Collision_Init();
+void DrawDist_OnFrame();
+
 extern "C"
 {
 	__declspec(dllexport) void Init(const char *path, const HelperFunctions &helperFunctions)
 	{
 		DrawDist_Init();
-		Objects_Init();
+		Collision_Init();
+		//Objects_Init();
 	}
 
 	__declspec(dllexport) void OnFrame() {

@@ -154,11 +154,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="drawdist.h" />
-    <ClInclude Include="objects.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="collision.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="drawdist.cpp" />
     <ClCompile Include="objects.cpp" />

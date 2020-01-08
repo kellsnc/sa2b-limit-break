@@ -1,7 +1,4 @@
 #pragma once
 
-void DrawDist_Init();
-
-void DrawDist_OnFrame();
-
 extern float DrawDistance;
+int IsPlayerInsideSphere(NJS_VECTOR *center, float radius);
