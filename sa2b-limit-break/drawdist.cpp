@@ -83,7 +83,7 @@ static int __cdecl ClipObject_r(ObjectMaster* a1, float dist) {
 	}
 	
 	NJS_VECTOR* pos = &a1->Data1.Entity->Position;
-	if (a1->DisplaySub || !a1->DeleteSub) dist = DrawDistance;
+	if ((a1->DisplaySub || !a1->DeleteSub)/* && a1->MainSub != (ObjectFuncPtr)0x630AD0*/) dist = DrawDistance;
 
 	if (SETDistanceCheckThing(&MainCharObj1[0]->Position, pos->x, pos->y, pos->z, dist) ||
 		(MainCharObj1[1] && SETDistanceCheckThing(&MainCharObj1[1]->Position, pos->x, pos->y, pos->z, dist))) {
@@ -116,7 +116,7 @@ void DrawDist_Init() {
 }
 
 void DrawDist_OnFrame() {
-	if (GameState == 7 && CurrentLandTable && CurrentLevel != LevelIDs_HiddenBase && CurrentLevel != LevelIDs_HiddenBase2P) {
+	if (GameState == 7 && CurrentLandTable && CurrentLandTable->COLList && CurrentLevel != LevelIDs_HiddenBase && CurrentLevel != LevelIDs_HiddenBase2P) {
 		if (CurrentLandTable->COLList[0].field_18 != 0xFF) {
 			for (uint16_t col = 0; col < CurrentLandTable->ChunkModelCount; ++col) {
 				COL* currentcol = &CurrentLandTable->COLList[col];
