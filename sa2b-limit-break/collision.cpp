@@ -1,155 +1,308 @@
 #include "stdafx.h"
 
-DataArray(ObjectMaster*, PlayerCollision_List, 0x1946660, 16);
-DataArray(ObjectMaster*, CollisionList_1_List, 0x19466A0, 128);
-DataArray(ObjectMaster*, CollisionList_2_List, 0x1DE4EE0, 128);
-DataArray(ObjectMaster*, CollisionList_3_List, 0x1DE6DA0, 128);
-DataArray(ObjectMaster*, CollisionList_4_List, 0x1945E18, 511);
-DataArray(ObjectMaster*, CollisionList_5_List, 0x19468B8, 128);
-DataArray(ObjectMaster*, CollisionList_6_List, 0x1946AC8, 128);
-DataArray(ObjectMaster*, CollisionList_7_List, 0x1946CC8, 128);
-DataArray(ObjectMaster*, CollisionList_8_List, 0x1945A08, 256);
-DataArray(ObjectMaster*, CollisionList_9_List, 0x1946618, 16);
-
-DataPointer(int, PlayerCollision_Count, 0x1946AB8);
-DataPointer(int, CollisionList_1_Count, 0x1945E0C);
-DataPointer(int, CollisionList_2_Count, 0x1DE8C2A);
-DataPointer(int, CollisionList_3_Count, 0x1DE944C);
-DataPointer(int, CollisionList_4_Count, 0x194665C);
-DataPointer(int, CollisionList_5_Count, 0x1946AC0);
-DataPointer(int, CollisionList_6_Count, 0x19468B0);
-DataPointer(int, CollisionList_7_Count, 0x1945E10);
-DataPointer(int, CollisionList_8_Count, 0x1946658);
-DataPointer(int, CollisionList_9_Count, 0x1946ABC);
-
-struct CollisionThing
+namespace CollisionList
 {
-	char field_0;
-	char field_1;
-	__int16 FlagsMaybe;
-	EntityData1 *Entity;
-};
+	enum _enum
+	{
+		Players,
+		Projectiles,
+		Targetable,
+		Enemies,
+		Regular, // only checks collision with elements of list 5
+		Unknown_5, // only checks collision with elements from its list
+		Rings, // No interaction
+		Unknown_7, // No interaction
+		Unknown_8, // No interaction
+		Chao,
+		COUNT
+	};
+}
 
-struct CollisionInfo2
+static std::vector<ObjectMaster*> entities[CollisionList::COUNT] = {};
+
+static void __cdecl AddToCollisionList_r(ObjectMaster* obj)
 {
-	__int16 List;
-	__int16 ThingCount;
-	__int16 Flags;
-	__int16 Count;
-	float Radius;
-	CollisionData *CollisionArray;
-	CollisionThing CollisionThings[16];
-	int CollisionThingsEnd;
-	int field_94;
-	int field_98;
-	ObjectMaster *Object;
-	__int16 field_A0;
-	__int16 field_A2;
-	CollisionInfo *CollidingObject;
-};
+	const auto collision = obj->Data1.Entity->Collision;
 
-static const void *const Collision_InitThings = (void*)0x47E6C0;
+	if (collision && collision->Object->MainSub != DeleteObject_)
+	{
+		Collision_InitThings(obj);
 
-// Add the object to a collision list for that frame
-// Only if the player is close enough
-void AddToCollisionList_r(ObjectMaster *a1)
-{
-	CollisionInfo2 *collision = (CollisionInfo2*)a1->Data1.Entity->Collision;
-	int count;
+		const auto list = collision->char0; // collision->List
 
-	NJS_VECTOR* pos = &a1->Data1.Entity->Position;
-	float dist = 168100;
-	if (a1->SETData && a1->SETData->field_C) dist = a1->SETData->field_C;
-
-	if (collision && (SETDistanceCheckThing(&MainCharObj1[0]->Position, pos->x, pos->y, pos->z, dist) ||
-		(MainCharObj1[1] && SETDistanceCheckThing(&MainCharObj1[1]->Position, pos->x, pos->y, pos->z, dist)))) {
-		__asm {
-			mov     eax, esi
-			call    Collision_InitThings
+		if (list < 0 || list > 9)
+		{
+			return;
 		}
 
-		switch (collision->List)
+		if (std::find(entities[list].begin(), entities[list].end(), obj) == entities[list].end())
 		{
-		case 0:
-			if (PlayerCollision_Count < 16u)
-			{
-				PlayerCollision_List[PlayerCollision_Count++] = a1;
-			}
-			break;
-		case 1:
-			if (CollisionList_1_Count < 128u)
-			{
-				CollisionList_1_List[CollisionList_1_Count++] = a1;
-			}
-			break;
-		case 2:
-			if (CollisionList_2_Count < 128u)
-			{
-				CollisionList_2_List[CollisionList_2_Count++] = a1;
-			}
-			break;
-		case 3:
-			if (CollisionList_3_Count < 128u)
-			{
-				CollisionList_3_List[CollisionList_3_Count++] = a1;
-			}
-			break;
-		case 4:
-			if (CollisionList_4_Count < 511u)
-			{
-				CollisionList_4_List[CollisionList_4_Count++] = a1;
-			}
-			break;
-		case 5:
-			if (CollisionList_5_Count < 128u)
-			{
-				CollisionList_5_List[CollisionList_5_Count++] = a1;
-			}
-			break;
-		case 6:
-			if (CollisionList_6_Count < 128u)
-			{
-				CollisionList_6_List[CollisionList_6_Count++] = a1;
-			}
-			break;
-		case 7:
-			if (CollisionList_7_Count < 128u)
-			{
-				CollisionList_7_List[CollisionList_7_Count++] = a1;
-			}
-			break;
-		case 8:
-			if (CollisionList_8_Count < 256u)
-			{
-				CollisionList_8_List[CollisionList_8_Count++] = a1;
-			}
-			break;
-		case 9:
-			if (CollisionList_9_Count < 16u)
-			{
-				CollisionList_9_List[CollisionList_9_Count++] = a1;
-			}
-			break;
-		default:
-			return;
+			entities[list].push_back(obj);
 		}
 	}
 }
 
-static void __declspec(naked) AddToCollisionList_()
+static void __declspec(naked) AddToCollisionList_asm()
 {
 	__asm
 	{
-		push esi // a1
-
-		// Call your __cdecl function here:
+		push esi
 		call AddToCollisionList_r
+		pop esi
+		retn
+	}
+}
 
-		pop esi // a1
+static void __cdecl CheckSelfCollision(int num)
+{
+	auto& list = entities[num];
+
+	for (size_t i = 0; i < list.size(); i++)
+	{
+		for (Uint32 x = 0; x < list.size(); x++)
+		{
+			if (x != i)
+			{
+				CheckCollision(list[i], list[x]);
+			}
+		}
+	}
+}
+
+static void __cdecl RunPlayerCollision_r()
+{
+	CheckSelfCollision(0);
+
+	for (auto& i : entities[0])
+	{
+		for (auto& x : entities[2])
+		{
+			CheckCollision(i, x);
+		}
+
+		for (auto& x : entities[3])
+		{
+			CheckCollision(i, x);
+		}
+
+		for (auto& x : entities[4])
+		{
+			CheckCollision(i, x);
+		}
+
+		for (auto& x : entities[5])
+		{
+			CheckCollision(i, x);
+		}
+
+		for (auto& x : entities[6])
+		{
+			CheckCollision(i, x);
+		}
+
+		for (auto& x : entities[7])
+		{
+			CheckCollision(i, x);
+		}
+
+		for (auto& x : entities[8])
+		{
+			CheckCollision(i, x);
+		}
+
+		for (auto& x : entities[9])
+		{
+			CheckCollision(i, x);
+		}
+	}
+}
+
+static void __cdecl RunProjectileCollision_r() {
+	for (auto& i : entities[1])
+	{
+		for (auto& x : entities[0])
+		{
+			CheckCollision(i, x);
+		}
+
+		for (auto& x : entities[2])
+		{
+			CheckCollision(i, x);
+		}
+
+		for (auto& x : entities[3])
+		{
+			CheckCollision(i, x);
+		}
+
+		for (auto& x : entities[4])
+		{
+			CheckCollision(i, x);
+		}
+
+		for (auto& x : entities[5])
+		{
+			CheckCollision(i, x);
+		}
+
+		for (auto& x : entities[9])
+		{
+			CheckCollision(i, x);
+		}
+	}
+}
+
+static void __cdecl RunChaoCollision_r() {
+	CheckSelfCollision(9);
+
+	for (auto& i : entities[9])
+	{
+		for (auto& x : entities[2])
+		{
+			CheckCollision(i, x);
+		}
+
+		for (auto& x : entities[3])
+		{
+			CheckCollision(i, x);
+		}
+
+		for (auto& x : entities[4])
+		{
+			CheckCollision(i, x);
+		}
+
+		for (auto& x : entities[5])
+		{
+			CheckCollision(i, x);
+		}
+
+		for (auto& x : entities[6])
+		{
+			CheckCollision(i, x);
+		}
+
+		for (auto& x : entities[7])
+		{
+			CheckCollision(i, x);
+		}
+	}
+}
+
+static void __cdecl RunEnemyCollision_r() {
+	CheckSelfCollision(3);
+
+	if (entities[2].size() > 0) {
+		WriteData((ObjectMaster***)0x4C4ADD, &entities[2][0]);
+		WriteData((ObjectMaster***)0x74A25D, &entities[2][0]);
+	}
+
+	if (entities[3].size() > 0) {
+		WriteData((ObjectMaster***)0x4C4AF7, &entities[3][0]);
+		WriteData((ObjectMaster***)0x74A266, &entities[3][0]);
+	}
+	
+	for (auto& i : entities[3])
+	{
+		for (auto& x : entities[4])
+		{
+			CheckCollision(i, x);
+		}
+
+		for (auto& x : entities[5])
+		{
+			CheckCollision(i, x);
+		}
+	}
+}
+
+static void __cdecl RunRegularCollision_r()
+{
+	for (auto& i : entities[4])
+	{
+		for (auto& j : entities[5])
+		{
+			CheckCollision(i, j);
+		}
+	}
+}
+
+static void __cdecl RunCollision_5_r()
+{
+	CheckSelfCollision(5);
+}
+
+static void __cdecl ClearCollisionLists_r()
+{
+	TargetCollisions_LastCount = entities[CollisionList::Targetable].size();
+	EnemiesCollisions_LastCount = entities[CollisionList::Enemies].size();
+
+	for (size_t i = 0; i < CollisionList::COUNT; i++)
+	{
+		entities[i].clear();
+	}
+}
+
+ObjectMaster* GetClosestCollisionDyn(int index, CharObj2Base* co2, float* dist) {
+
+}
+
+static void __cdecl ScanMechTargets_r(CharObj2Base* co2, MechEggmanCharObj2* eggco2) {
+	if (eggco2->field_35C && eggco2->field_368 < 32) {
+		float dist_target = 0;
+		float dist_temp_target = 0;
+
+		ObjectMaster* target = GetClosestCollisionDyn(2, co2, &dist_target);
+		ObjectMaster* temp_target = GetClosestCollisionDyn(3, co2, &dist_temp_target);
+		ObjectMaster* target_player = MainCharacter[1];
+
+		if (target) {
+			if (temp_target && dist_temp_target < dist_target) {
+				dist_target = dist_temp_target;
+				target = temp_target;
+			}
+		}
+		else
+		{
+			target = temp_target;
+		}
+
+		if (co2->PlayerNum) {
+			target_player = MainCharacter[0];
+		}
+		if (target_player) {
+			ObjectMaster* playerobj = GetClosestPlayer(target_player, co2, &dist_temp_target);
+
+			if (*&dist_temp_target > 0.0 && *&dist_target > *&dist_temp_target) {
+				target = playerobj;
+			}
+		}
+
+		// todo : continue
+	}
+}
+
+static void __declspec(naked) ScanMechTargets_asm()
+{
+	__asm
+	{
+		push[esp + 04h] // eggco2
+		push eax // co2
+		call sub_74CCF0
+		pop eax
+		add esp, 4
 		retn
 	}
 }
 
 void Collision_Init() {
-	WriteJump((void*)0x47E750, AddToCollisionList_);
+	WriteJump((void*)0x47E750, AddToCollisionList_asm);
+	WriteJump((void*)0x485920, RunPlayerCollision_r);
+	WriteJump((void*)0x485B20, RunProjectileCollision_r);
+	WriteJump((void*)0x485C70, RunChaoCollision_r);
+	WriteJump((void*)0x485E10, RunEnemyCollision_r);
+	WriteJump((void*)0x485EF0, RunRegularCollision_r);
+	WriteJump((void*)0x485F50, RunCollision_5_r);
+	WriteJump((void*)0x485FD0, ClearCollisionLists_r);
+	WriteJump((void*)0x74CCF0, ScanMechTargets_asm);
 }
