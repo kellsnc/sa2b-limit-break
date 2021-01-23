@@ -13,3 +13,4 @@
 
 #include "collisions.h"
 #include "drawdist.h"
+#include "sounds.h"
