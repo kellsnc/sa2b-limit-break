@@ -1,7 +1,9 @@
 #include "stdafx.h"
 
-static Uint32 DrawDistanceMultiplier = 10000;
 static constexpr int MaxPlayers = 2;
+
+static Uint32 DrawDistanceMultiplier = 10000;
+static Uint32 LandDrawDistanceMultiplier = 100;
 
 static Trampoline* LoadLandManager_t;
 static Trampoline* LoadChunkLandManager_t;
@@ -125,14 +127,14 @@ static void __declspec(naked) SETDistanceCheckThing2P_asm()
 
 // todo: replace the visible list by vectors and do that in ListGroundForDrawing
 void IncreaseLandTable(LandTable* land) {
-	land->field_C *= DrawDistanceMultiplier;
+	land->field_C *= LandDrawDistanceMultiplier;
 
 	if (CurrentLevel != LevelIDs_HiddenBase && CurrentLevel != LevelIDs_HiddenBase2P) {
 		for (int col = 0; col < land->COLCount; ++col) {
 			COL* currentcol = &land->COLList[col];
 
 			if (currentcol->Flags & SurfaceFlag_Visible) {
-				currentcol->Radius *= (DrawDistanceMultiplier / 100);
+				currentcol->Radius *= LandDrawDistanceMultiplier;
 				currentcol->field_14 = 0;
 				currentcol->field_18 = 0;
 			}
