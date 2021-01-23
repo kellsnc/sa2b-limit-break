@@ -11,3 +11,4 @@
 #include "SA2ModLoader.h"
 
 #include "collisions.h"
+#include "drawdist.h"
