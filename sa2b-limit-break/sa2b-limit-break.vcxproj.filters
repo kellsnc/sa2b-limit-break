@@ -21,7 +21,7 @@
     <ClInclude Include="targetver.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="pointers.h">
+    <ClInclude Include="collisions.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
   </ItemGroup>
@@ -38,10 +38,10 @@
     <ClCompile Include="drawdist.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="collision.cpp">
+    <ClCompile Include="sounds.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="sounds.cpp">
+    <ClCompile Include="collisions.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>

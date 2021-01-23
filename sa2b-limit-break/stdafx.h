@@ -9,4 +9,5 @@
 #include <vector>
 
 #include "SA2ModLoader.h"
-#include "pointers.h"
+
+#include "collisions.h"

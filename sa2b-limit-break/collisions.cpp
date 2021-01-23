@@ -231,7 +231,6 @@ static void __cdecl ClearCollisionLists_r()
 	for (size_t i = 0; i < CollisionList::COUNT; i++)
 	{
 		old_entities[i].clear();
-		old_entities[i].reserve(entities->size());
 
 		for (auto& j : entities[i]) {
 			old_entities[i].push_back(j);
@@ -242,16 +241,29 @@ static void __cdecl ClearCollisionLists_r()
 }
 
 static void __cdecl ScanMechTargets_r(CharObj2Base* co2, MechEggmanCharObj2* eggco2) {
-	if (eggco2->field_35C && eggco2->field_368 < 32) {
-		float dist_target = 0;
-		float dist_temp_target = 0;
+	ObjectMaster* target; // ebp
+	ObjectMaster* temp_target; // eax
+	ObjectMaster* target_player; // ebx
+	ObjectMaster* playerobj; // ecx
+	EntityData1* target_data; // eax MAPDST
+	char field_2; // al
+	ObjectMaster* targettask; // esi
+	TargetThing* targettask_data2; // ebx
+	__int8 playernum; // al
+	void* target_data2; // ebp
+	int* target_entitydata2; // ebp
+	NJS_VECTOR* targetpos; // eax
+	float dist_temp_target; // [esp+10h] [ebp-8h]
+	float dist_target; // [esp+14h] [ebp-4h]
 
-		// Get objects that intersect with the mech ray
-		ObjectMaster* target = GetTargetCollision(TargetCollisions_LastCount, co2, old_entities[CollisionList::Targetable].data(), &dist_target);
-		ObjectMaster* temp_target = GetTargetCollision(EnemiesCollisions_LastCount, co2, old_entities[CollisionList::Enemies].data(), &dist_temp_target);
-		
-		if (target) {
-			if (temp_target && dist_temp_target < dist_target) {
+	if (eggco2->field_35C && eggco2->field_368 < 32)
+	{
+		target = GetTargetCollision(TargetCollisions_LastCount, co2, old_entities[CollisionList::Targetable].data(), &dist_target);
+		temp_target = GetTargetCollision(EnemiesCollisions_LastCount, co2, old_entities[CollisionList::Enemies].data(), &dist_temp_target);
+		if (target)
+		{
+			if (temp_target && dist_temp_target < dist_target)
+			{
 				dist_target = dist_temp_target;
 				target = temp_target;
 			}
@@ -260,58 +272,63 @@ static void __cdecl ScanMechTargets_r(CharObj2Base* co2, MechEggmanCharObj2* egg
 		{
 			target = temp_target;
 		}
-
-		// Get players that intersect with the mech ray
-		ObjectMaster* target_player = MainCharacter[1];
-
-		if (co2->PlayerNum) {
+		target_player = MainCharacter[1];
+		if (co2->PlayerNum)
+		{
 			target_player = MainCharacter[0];
 		}
-		if (target_player) {
-			ObjectMaster* playerobj = GetTargetPlayer(target_player, co2, &dist_temp_target);
-
-			if (dist_temp_target > 0.0 && dist_target > dist_temp_target) {
+		if (target_player)
+		{
+			playerobj = GetTargetPlayer(target_player, co2, &dist_temp_target);
+			if (dist_temp_target > 0.0f && dist_target > dist_temp_target)
+			{
 				target = playerobj;
 			}
 		}
-
-		// Target acquired
-		if (target) {
-			EntityData1* target_data = target->Data1.Entity;
-
-			if (!target_data || (target_data->field_2 != 22 && target_data->field_2 != 23)) {
-				ObjectMaster* targettask = LoadChildObject((LoadObj)(LoadObj_Data1), (ObjectFuncPtr)0x74C260, MainCharacter[co2->PlayerNum]);
-				
-				if (targettask) {
-					TargetThing* targetinfo = new TargetThing();
-
-					targettask->Data2.Undefined = (void*)targetinfo;
-
-					targetinfo->playernum = co2->PlayerNum;
-					targetinfo->target = target;
-
-					sub_47EEC0(target_data, target_data->Collision->CollisionArray, &targetinfo->position);
-					sub_74AE30(eggco2, targettask);
-
-					if (GetObjectColList(target)) {
-						target->EntityData2->field_10 = *(float*)targettask;
+		if (target)
+		{
+			target_data = target->Data1.Entity;
+			if (!target_data || (field_2 = target_data->field_2, field_2 != 22) && field_2 != 23)
+			{
+				targettask = LoadChildObject(LoadObj_Data1, (ObjectFuncPtr)0x74C260, MainCharacter[co2->PlayerNum]);
+				if (targettask)
+				{
+					targettask_data2 = (TargetThing*)AllocateArray(32, 1, (char*)"..\\..\\src\\figure\\ewalker\\ewalker.c", 9293);
+					if (targettask_data2)
+					{
+						playernum = co2->PlayerNum;
+						targettask->Data2.Undefined = targettask_data2;
+						targettask_data2->playernum = playernum;
+						target_data = target->Data1.Entity;
+						sub_47EEC0(target_data, target_data->Collision->CollisionArray, &targettask_data2->position);
+						targettask_data2->target = target;
+						if (GetObjectColList(target))
+						{
+							target_entitydata2 = (int*)target->EntityData2;
+							sub_74AE30(eggco2, targettask);
+							target_entitydata2[16] = (int)targettask;
+						}
+						else
+						{
+							target_data2 = target->Data2.Undefined;
+							sub_74AE30(eggco2, targettask);
+							*((int*)target_data2 + 227) = (int)targettask;
+						}
+						++eggco2->field_368;
+						targetpos = &targettask_data2->position;
+						eggco2->field_35E = 1;
+						eggco2->field_390 = targetpos->x;
+						eggco2->field_394 = targetpos->y;
+						eggco2->field_398 = targetpos->z;
+						eggco2->field_366 = 7;
+						targettask->field_1C = (ObjectFuncPtr)0x74BEC0;
+						targettask->DeleteSub = (ObjectFuncPtr)0x74BDB0;
+						PlaySoundProbably(8207, 0, 0, 0);
 					}
-					else {
-						*(&target->Data2.Undefined + 227) = (void*)targettask;
+					else
+					{
+						DeleteObject_(targettask);
 					}
-
-					eggco2->field_368 += 1;
-					eggco2->field_35E = 1;
-					eggco2->field_390 = targetinfo->position.x;
-					eggco2->field_394 = targetinfo->position.y;
-					eggco2->field_398 = targetinfo->position.z;
-					eggco2->field_366 = 7;
-					targettask->field_1C = (ObjectFuncPtr)0x74BEC0;
-					targettask->DeleteSub = (ObjectFuncPtr)0x74BDB0;
-					PlaySoundProbably(8207, 0, 0, 0);
-				}
-				else {
-					DeleteObject_(targettask);
 				}
 			}
 		}
@@ -354,7 +371,6 @@ bool sub_74A140(EntityData1* data, MechEggmanCharObj2* eggco2) {
 	int v10; // ecx
 	ObjectMaster** v11; // ebx
 	int v12; // eax
-	signed int v13 = 0; // ecx
 	CollisionInfo* v14; // ecx
 	ObjectMaster* v15; // eax
 	EntityData1* v16; // eax
@@ -409,7 +425,7 @@ bool sub_74A140(EntityData1* data, MechEggmanCharObj2* eggco2) {
 				break;
 			}
 		LABEL_19:
-			v10 = v13 - 1;
+			v10 = v18 - 1;
 			v19 = v10;
 			if (v10 <= 0)
 			{
@@ -455,7 +471,7 @@ bool sub_74A140(EntityData1* data, MechEggmanCharObj2* eggco2) {
 			}
 			if (--v18 <= 0)
 			{
-				v13 = v19;
+				v18 = v19;
 				goto LABEL_19;
 			}
 		}
@@ -463,7 +479,7 @@ bool sub_74A140(EntityData1* data, MechEggmanCharObj2* eggco2) {
 	return 1;
 }
 
-void Collision_Init() {
+void Collisions_Init() {
 	WriteJump((void*)0x47E750, AddToCollisionList_asm);
 	WriteJump((void*)0x485920, RunPlayerCollision_r);
 	WriteJump((void*)0x485B20, RunProjectileCollision_r);
@@ -474,6 +490,4 @@ void Collision_Init() {
 	WriteJump((void*)0x485FD0, ClearCollisionLists_r);
 	WriteJump((void*)0x74CCF0, ScanMechTargets_asm);
 	WriteJump((void*)0x74A140, sub_74A140);
-
-	WriteData<5>((void*)0x74BE8B, 0x90);
 }

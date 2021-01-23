@@ -1,5 +1,7 @@
 #pragma once
 
+void Collisions_Init();
+
 VoidFunc(RunObjectCollisions, 0x486190);
 VoidFunc(RunPlayerCollision, 0x485920);
 VoidFunc(RunProjectileCollisionn, 0x485B20);
