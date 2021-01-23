@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "SA2ModLoader.h"
+#include "Trampoline.h"
 
 #include "collisions.h"
 #include "drawdist.h"

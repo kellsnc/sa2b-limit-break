@@ -159,6 +159,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\sa2-mod-loader\libmodutils\Trampoline.cpp" />
     <ClCompile Include="collisions.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="drawdist.cpp" />

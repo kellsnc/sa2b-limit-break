@@ -3,6 +3,9 @@
 static Uint32 DrawDistanceMultiplier = 10000;
 static constexpr int MaxPlayers = 2;
 
+static Trampoline* LoadLandManager_t;
+static Trampoline* LoadChunkLandManager_t;
+
 static int __cdecl ClipObject_r(ObjectMaster* obj, float dist) {
 	if (dist == 0.0f) {
 		return 0;
@@ -120,8 +123,44 @@ static void __declspec(naked) SETDistanceCheckThing2P_asm()
 	}
 }
 
+// todo: replace the visible list by vectors and do that in ListGroundForDrawing
+void IncreaseLandTable(LandTable* land) {
+	land->field_C *= DrawDistanceMultiplier;
+
+	if (CurrentLevel != LevelIDs_HiddenBase && CurrentLevel != LevelIDs_HiddenBase2P) {
+		for (int col = 0; col < land->COLCount; ++col) {
+			COL* currentcol = &land->COLList[col];
+
+			if (currentcol->Flags & SurfaceFlag_Visible) {
+				currentcol->Radius *= (DrawDistanceMultiplier / 100);
+				currentcol->field_14 = 0;
+				currentcol->field_18 = 0;
+			}
+		}
+	}
+}
+
+void __cdecl LoadLandManager_r(LandTable* land) {
+	NonStaticFunctionPointer(void, original, (LandTable * land), LoadLandManager_t->Target());
+
+	IncreaseLandTable(land);
+
+	original(land);
+}
+
+void __cdecl LoadChunkLandManager_r(LandTable* land) {
+	NonStaticFunctionPointer(void, original, (LandTable * land), LoadChunkLandManager_t->Target());
+
+	IncreaseLandTable(land);
+
+	original(land);
+}
+
 void DrawDist_Init() {
 	WriteJump((void*)0x488C80, ClipObject_);
 	WriteCall((void*)0x488717, SETDistanceCheckThing_asm);
 	WriteCall((void*)0x4884D5, SETDistanceCheckThing2P_asm);
+
+	LoadLandManager_t = new Trampoline((int)LoadLandManager, (int)LoadLandManager + 0x7, LoadLandManager_r);
+	LoadChunkLandManager_t = new Trampoline(0x492C70, 0x492C77, LoadChunkLandManager_r);
 }

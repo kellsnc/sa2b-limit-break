@@ -47,5 +47,8 @@
     <ClCompile Include="collisions.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
+    <ClCompile Include="..\sa2-mod-loader\libmodutils\Trampoline.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
