@@ -2,7 +2,7 @@
 
 void Sounds_Init();
 
-struct soundHeader 
+struct SoundHeader 
 {
 	int unk1;
 	int unk2;
@@ -34,41 +34,39 @@ struct SoundEntry
 
 struct SoundSystemPointers
 {
-	void* unk1;
-	void* unk2;
-	void* unk3;
-	void* unk4;
-	void* unk5;
-	void* unk6;
-	void* unk7;
-	void* unk8;
+	void* unk1; // 0
+	void* unk2; // 4
+	void* unk3; // 8
+	void* unk4; // 12
+	void* unk5; // 16
+	void* unk6; // 20
+	void* unk7; // 24
+	void* unk8; // 28
+	void* unk9; // 32
+	void* unk10; // 36
+	void* unk11; // 40
+	void* unk12; // 44
+	void* unk13; // 48
+	void* unk14; // 52
+	void* unk15; // 56
+	void* unk16; // 60
 };
 
-// The game's struct allocated in memory, everything is accessed relative to this D:
+// The game's struct allocated in memory
 struct SoundSystem {
-	soundHeader soundHeader; // 16 bytes
+	SoundHeader soundHeader; // 16 bytes
 	SoundEntry soundEntries[43]; // 48 bytes each
-	SoundSystemPointers soundHead; // 32 bytes
+	SoundSystemPointers soundHead; // 64 bytes
 };
 
-VoidFunc(SetWholeSoundQueueSomeFlag, 0x437E90);
-VoidFunc(FreeSoundQueueAndLevelSounds, 0x435F80);
-DataPointer(SoundEntry*, SoundQueuePtr, 0x1A55874);
-DataPointer(int, dword_1AF0ECC, 0x1AF0ECC);
-DataPointer(char, byte_174AFD9, 0x174AFD9);
-DataArray(char, byte_A00648, 0xA00648, 8);
+static constexpr int SoundCount_Expended = 255;
+static constexpr int SoundLimit_Expended = 250;
+static constexpr int SoundLimit2_Expended = 244;
 
-//void __usercall sub_459070(int character@<eax>, void *address@<ecx>, int count, int idk)
-static const void* const sub_459070Ptr = (void*)0x459070;
-static inline void sub_459070(int character, void* address, int count, void* idk)
-{
-	__asm
-	{
-		push[idk]
-		push[count]
-		mov ecx, [address]
-		mov eax, [character]
-		call sub_459070Ptr
-		add esp, 8
-	}
-}
+struct SoundSystem_Expended {
+	SoundHeader soundHeader; // 16 bytes
+	SoundEntry soundEntries[SoundCount_Expended]; // 48 bytes each
+	SoundSystemPointers soundHead; // 64 bytes
+};
+
+DataPointer(SoundSystem*, SoundSystemPtr, 0x1A55874);

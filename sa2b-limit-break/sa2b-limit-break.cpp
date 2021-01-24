@@ -6,7 +6,7 @@ extern "C"
 	{
 		DrawDist_Init();
 		Collisions_Init(); // Dynamic object collision lists
-		//Sounds_Init();
+		Sounds_Init();
 	}
 	__declspec(dllexport) ModInfo SA2ModInfo = { ModLoaderVer };
 }
