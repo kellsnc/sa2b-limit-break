@@ -155,7 +155,6 @@
   <ItemGroup>
     <ClInclude Include="collisions.h" />
     <ClInclude Include="drawdist.h" />
-    <ClInclude Include="sounds.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
@@ -165,7 +164,6 @@
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="drawdist.cpp" />
     <ClCompile Include="sa2b-limit-break.cpp" />
-    <ClCompile Include="sounds.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
