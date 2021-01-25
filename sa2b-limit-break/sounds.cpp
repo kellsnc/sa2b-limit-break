@@ -1,6 +1,44 @@
 #include "stdafx.h"
 
+char __cdecl sub_436AD0(char a1, int ID) {
+	SoundSystem_Expended* system = (SoundSystem_Expended*)SoundSystemPtr;
+	
+	int index = -1;
+
+	for (int i = 0; i < SoundCount_Expended; ++i) {
+		if (system->soundEntries[i].ID < 0) {
+			index = i;
+			break;
+		}
+	}
+
+	if (index < 0) {
+		if (system->soundHeader.OverflowIndex <= 0 || system->soundHeader.OverflowIndex >= 255) {
+			system->soundHeader.OverflowIndex = 200;
+		}
+
+		index = system->soundHeader.OverflowIndex;
+		++system->soundHeader.OverflowIndex;
+	}
+
+	return index;
+}
+
+static void __declspec(naked) sub_436AD0_asm()
+{
+	__asm
+	{
+		push[esp + 04h] // ID
+		push al // a1
+		call sub_436AD0
+		add esp, 8
+		retn
+	}
+}
+
 void Sounds_Init() {
+	WriteJump((void*)0x436AD0, sub_436AD0_asm);
+
 	MemoryManager->Deallocate((AllocatedMem*)SoundSystemPtr - 0x4, (char*)"..\\..\\src\\sound.c", 789);
 	AllocatedMem* mem = MemoryManager->Allocate(sizeof(SoundSystem_Expended) + 0x4, (char*)"..\\..\\src\\sound.c", 652); //Allocate our own.
 	SoundSystemPtr = (SoundSystem*)&mem->Data;
@@ -80,19 +118,6 @@ void Sounds_Init() {
 	WriteData((int*)0x436B44, SoundCount_Expended);
 	WriteData<1>((void*)0x436B93, static_cast<char>(SoundCount_Expended));
 	WriteData<1>((void*)0x436BC0, static_cast<char>(SoundCount_Expended));
-	WriteData((int*)0x436BFE, soundlimithing2offset);
-	WriteData((int*)0x436C03, SoundLimit2_Expended);
-	WriteData((int*)0x436C09, soundlimithing2offset);
-	WriteData((int*)0x436C0E, SoundLimit_Expended - 1);
-	WriteData<1>((void*)0x436C19, static_cast<char>(SoundLimit2_Expended));
-	WriteData<1>((void*)0x436C4D, static_cast<char>(SoundLimit_Expended));
-	WriteData<1>((void*)0x436B55, static_cast<char>(SoundLimit_Expended));
-	WriteData<1>((void*)0x436B97, static_cast<char>(SoundLimit_Expended));
-	WriteData<1>((void*)0x436BCD, static_cast<char>(SoundLimit_Expended));
-	WriteData((int*)0x436B9D, soundlimithingoffset);
-	WriteData((int*)0x436C8F, SoundLimit2_Expended);
-	WriteData<1>((void*)0x436CC4, static_cast<char>(SoundLimit2_Expended));
-	WriteData<1>((void*)0x436CE7, static_cast<char>(SoundLimit2_Expended));
 
 	WriteData<1>((void*)0x436EBF, static_cast<char>(SoundCount_Expended)); // sub_436EA0
 	WriteData<1>((void*)0x436F3B, static_cast<char>(SoundLimit_Expended)); // sub_436ED0
@@ -157,5 +182,67 @@ void Sounds_Init() {
 
 	WriteData<1>((void*)0x4A3921, static_cast<char>(SoundCount_Expended - 0x11)); //sub_4A3DB0
 	WriteData<1>((void*)0x4A3C61, static_cast<char>(SoundCount_Expended)); // sub_4A3B40
-	WriteData<1>((void*)0x51F6B0, static_cast<char>(SoundCount_Expended - 0x9)); // sub_51F5D0
+	WriteData<1>((void*)0x51F6B5, static_cast<char>(SoundCount_Expended - 0x9)); // sub_51F5D0
+
+	// sub_51FD10
+	WriteData<1>((void*)0x51FDA7, static_cast<char>(SoundCount_Expended - 0x3));
+	WriteData((int*)0x51FE55, SoundCount_Expended);
+
+	WriteData<1>((void*)0x5200D5, static_cast<char>(SoundCount_Expended - 0x12)); // sub_520030
+	WriteData<1>((void*)0x52080B, static_cast<char>(SoundCount_Expended - 0x8)); // sub_520610
+	WriteData<1>((void*)0x52080B, static_cast<char>(SoundCount_Expended - 0x8)); // sub_520610
+
+	// sub_5209F0
+	WriteData<1>((void*)0x520AF6, static_cast<char>(SoundCount_Expended - 0x10));
+	WriteData<1>((void*)0x520B3C, static_cast<char>(SoundCount_Expended - 0xD));
+	WriteData<1>((void*)0x520B3C, static_cast<char>(SoundCount_Expended - 0xD));
+	
+	// sub_520CC0
+	WriteData<1>((void*)0x520EE0, static_cast<char>(SoundCount_Expended));
+	WriteData<1>((void*)0x520F25, static_cast<char>(SoundCount_Expended - 0xD));
+	WriteData<1>((void*)0x520F80, static_cast<char>(SoundCount_Expended - 0x11));
+
+	// sub_521020
+	WriteData<1>((void*)0x52115E, static_cast<char>(SoundCount_Expended - 0xD));
+	WriteData<1>((void*)0x5212A2, static_cast<char>(SoundCount_Expended - 0x1));
+	WriteData<1>((void*)0x521330, static_cast<char>(SoundCount_Expended - 0x11));
+	WriteData((int*)0x5213A8, SoundCount_Expended);
+	WriteData((int*)0x5213DF, SoundCount_Expended);
+	WriteData<1>((void*)0x521463, static_cast<char>(SoundCount_Expended - 0x11));
+	WriteData((int*)0x521497, SoundCount_Expended);
+	WriteData<1>((void*)0x521517, static_cast<char>(SoundCount_Expended - 0xF));
+	WriteData((int*)0x52154A, SoundCount_Expended);
+	WriteData((int*)0x5215D9, SoundCount_Expended);
+	WriteData((int*)0x52160F, SoundCount_Expended);
+
+	// sub_531FC0 (LoadChaoSounds?)
+	WriteData((int*)0x532062, unk10offset);
+	WriteData((int*)0x53206C, unk13offset);
+	WriteData((int*)0x532076, unk15offset);
+
+	WriteData((int*)0x5A6B84, SoundCount_Expended); // sub_5A6B30
+	WriteData<1>((void*)0x5C947F, static_cast<char>(SoundCount_Expended)); // sub_5C9380
+
+	// sub_5C9570
+	WriteData<1>((void*)0x5C9958, static_cast<char>(SoundCount_Expended - 0x10));
+	WriteData<1>((void*)0x5CA00A, static_cast<char>(SoundCount_Expended - 0x1));
+	WriteData((int*)0x5CA066, SoundCount_Expended);
+	WriteData((int*)0x5CA0CC, SoundCount_Expended);
+	
+	// sub_5CA1A0
+	WriteData<1>((void*)0x5CA5D1, static_cast<char>(SoundCount_Expended - 0x1));
+	WriteData((int*)0x5CA62D, SoundCount_Expended);
+	WriteData((int*)0x5CA68D, SoundCount_Expended);
+	WriteData<1>((void*)0x5CA7CB, static_cast<char>(SoundCount_Expended - 0xF));
+
+	WriteData<1>((void*)0x5CABD6, static_cast<char>(SoundCount_Expended)); // sub_5CAA90
+
+	// BossHotShotExec
+	WriteData((int*)0x5CB3BA, SoundCount_Expended);
+	WriteData((int*)0x5CB4B7, SoundCount_Expended);
+}
+
+void Sounds_OnFrame() {
+	SoundSystem_Expended* system = (SoundSystem_Expended*)SoundSystemPtr;
+	system = system;
 }

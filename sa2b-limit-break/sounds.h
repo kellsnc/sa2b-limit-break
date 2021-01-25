@@ -1,11 +1,12 @@
 #pragma once
 
 void Sounds_Init();
+void Sounds_OnFrame();
 
 struct SoundHeader 
 {
-	int unk1;
-	int unk2;
+	int StartIndex; // the code that output a free index starts searching from this index
+	int OverflowIndex; // if the list is full, it will replace sounds starting from 38, this is between 38 and 43.
 	int unk3;
 	int unk4;
 };
@@ -14,7 +15,7 @@ struct SoundEntry
 {
 	__int8 unk1;
 	__int8 unk2;
-	__int8 unk3;
+	__int8 Bank;
 	__int8 unk4;
 	__int8 unk5;
 	__int8 VolumeA;
@@ -24,32 +25,32 @@ struct SoundEntry
 	__int16 unk8;
 	__int16 unk9;
 	__int16 unk10;
-	int entity;
+	int Entity;
 	int ID;
 	int unk11;
-	NJS_VECTOR pos;
+	NJS_VECTOR Position;
 	Float unk12;
 	Float unk13;
 };
 
 struct SoundSystemPointers
 {
-	void* unk1; // 0
-	void* unk2; // 4
-	void* unk3; // 8
-	void* unk4; // 12
-	void* unk5; // 16
-	void* unk6; // 20
-	void* unk7; // 24
-	void* unk8; // 28
-	void* unk9; // 32
-	void* unk10; // 36
-	void* unk11; // 40
-	void* unk12; // 44
-	void* unk13; // 48
-	void* unk14; // 52
-	void* unk15; // 56
-	void* unk16; // 60
+	void* unk1;
+	void* unk2;
+	void* unk3;
+	void* unk4;
+	void* unk5;
+	void* unk6;
+	void* unk7;
+	void* unk8;
+	void* unk9;
+	void* unk10;
+	void* unk11;
+	void* unk12;
+	void* unk13;
+	void* unk14;
+	void* unk15;
+	void* unk16;
 };
 
 // The game's struct allocated in memory
