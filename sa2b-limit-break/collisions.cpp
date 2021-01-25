@@ -490,4 +490,26 @@ void Collisions_Init() {
 	WriteJump((void*)0x485FD0, ClearCollisionLists_r);
 	WriteJump((void*)0x74CCF0, ScanMechTargets_asm);
 	WriteJump((void*)0x74A140, sub_74A140);
+
+	entities[0].reserve(16);
+	entities[1].reserve(128);
+	entities[2].reserve(128);
+	entities[3].reserve(128);
+	entities[4].reserve(511);
+	entities[5].reserve(128);
+	entities[6].reserve(128);
+	entities[7].reserve(128);
+	entities[8].reserve(256);
+	entities[9].reserve(16);
+
+	old_entities[0].reserve(16);
+	old_entities[1].reserve(128);
+	old_entities[2].reserve(128);
+	old_entities[3].reserve(128);
+	old_entities[4].reserve(511);
+	old_entities[5].reserve(128);
+	old_entities[6].reserve(128);
+	old_entities[7].reserve(128);
+	old_entities[8].reserve(256);
+	old_entities[9].reserve(16);
 }

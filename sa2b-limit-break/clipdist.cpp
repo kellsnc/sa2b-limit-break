@@ -2,8 +2,8 @@
 
 static constexpr int MaxPlayers = 2;
 
-static Uint32 DrawDistanceMultiplier = 10000;
-static Uint32 LandDrawDistanceMultiplier = 100;
+static Uint32 ClipDistanceMultiplier = 10000;
+static Uint32 LandClipDistanceMultiplier = 100;
 
 static Trampoline* LoadLandManager_t;
 static Trampoline* LoadChunkLandManager_t;
@@ -22,11 +22,11 @@ static int __cdecl ClipObject_r(ObjectMaster* obj, float dist) {
 
 		// 0 and 1 aren't level objects
 		if (obj_entry->List > 1) {
-			dist *= DrawDistanceMultiplier;
+			dist *= ClipDistanceMultiplier;
 		}
 	}
 	else {
-		dist *= DrawDistanceMultiplier;
+		dist *= ClipDistanceMultiplier;
 	}
 
 	NJS_VECTOR* pos = &obj->Data1.Entity->Position;
@@ -61,14 +61,14 @@ static void __declspec(naked) ClipObject_()
 	}
 }
 
-void SETDistanceCheckThing_r(SETObjectData* SETData, NJS_VECTOR* from, float x, float y, float z, float dist) {
+bool __cdecl SETDistanceCheckThing_r(SETObjectData* SETData, NJS_VECTOR* from, float x, float y, float z, float dist) {
 	ObjectListEntry* obj_entry = &CurrentObjectList->List[SETData->SETEntry->ID & 0x7FFF];
 
 	if (obj_entry->List > 1) {
-		dist *= DrawDistanceMultiplier;
+		dist *= ClipDistanceMultiplier;
 	}
 
-	SETDistanceCheckThing(from, x, y, z, dist);
+	return SETDistanceCheckThing(from, x, y, z, dist);
 }
 
 static void __declspec(naked) SETDistanceCheckThing_asm()
@@ -92,14 +92,14 @@ static void __declspec(naked) SETDistanceCheckThing_asm()
 	}
 }
 
-void SETDistanceCheckThing2P_r(SETObjectData* SETData, NJS_VECTOR* from, NJS_VECTOR* p2pos, float x, float y, float z, float dist) {
+bool __cdecl SETDistanceCheckThing2P_r(SETObjectData* SETData, NJS_VECTOR* from, NJS_VECTOR* p2pos, float x, float y, float z, float dist) {
 	ObjectListEntry* obj_entry = &CurrentObjectList->List[SETData->SETEntry->ID & 0x7FFF];
 
 	if (obj_entry->List > 1) {
-		dist *= DrawDistanceMultiplier;
+		dist *= ClipDistanceMultiplier;
 	}
 
-	SETDistanceCheckThing2P(from, p2pos, x, y, z, dist);
+	return SETDistanceCheckThing2P(from, p2pos, x, y, z, dist);
 }
 
 static void __declspec(naked) SETDistanceCheckThing2P_asm()
@@ -127,14 +127,14 @@ static void __declspec(naked) SETDistanceCheckThing2P_asm()
 
 // todo: replace the visible list by vectors and do that in ListGroundForDrawing
 void IncreaseLandTable(LandTable* land) {
-	land->field_C *= LandDrawDistanceMultiplier;
+	land->field_C *= LandClipDistanceMultiplier;
 
 	if (CurrentLevel != LevelIDs_HiddenBase && CurrentLevel != LevelIDs_HiddenBase2P) {
 		for (int col = 0; col < land->COLCount; ++col) {
 			COL* currentcol = &land->COLList[col];
 
 			if (currentcol->Flags & SurfaceFlag_Visible) {
-				currentcol->Radius *= LandDrawDistanceMultiplier;
+				currentcol->Radius *= LandClipDistanceMultiplier;
 				currentcol->field_14 = 0;
 				currentcol->field_18 = 0;
 			}
@@ -158,11 +158,19 @@ void __cdecl LoadChunkLandManager_r(LandTable* land) {
 	original(land);
 }
 
-void DrawDist_Init() {
-	WriteJump((void*)0x488C80, ClipObject_);
-	WriteCall((void*)0x488717, SETDistanceCheckThing_asm);
-	WriteCall((void*)0x4884D5, SETDistanceCheckThing2P_asm);
+void ClipDist_Init(const IniFile* config) {
+	if (config->getBool("Clip", "ClipDist", true)) {
+		WriteJump((void*)0x488C80, ClipObject_);
+		WriteCall((void*)0x488717, SETDistanceCheckThing_asm);
+		WriteCall((void*)0x4884D5, SETDistanceCheckThing2P_asm);
 
-	LoadLandManager_t = new Trampoline((int)LoadLandManager, (int)LoadLandManager + 0x7, LoadLandManager_r);
-	LoadChunkLandManager_t = new Trampoline(0x492C70, 0x492C77, LoadChunkLandManager_r);
+		ClipDistanceMultiplier = config->getInt("", "ClipMultiplier", ClipDistanceMultiplier);
+	}
+	
+	if (config->getBool("Clip", "LandDist", true)) {
+		LoadLandManager_t = new Trampoline((int)LoadLandManager, (int)LoadLandManager + 0x7, LoadLandManager_r);
+		LoadChunkLandManager_t = new Trampoline(0x492C70, 0x492C77, LoadChunkLandManager_r);
+
+		LandClipDistanceMultiplier = config->getInt("", "LandMultiplier", LandClipDistanceMultiplier);
+	}
 }

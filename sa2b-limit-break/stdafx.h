@@ -10,7 +10,7 @@
 
 #include "SA2ModLoader.h"
 #include "Trampoline.h"
+#include "IniFile.hpp"
 
 #include "collisions.h"
-#include "drawdist.h"
-#include "sounds.h"
+#include "clipdist.h"
