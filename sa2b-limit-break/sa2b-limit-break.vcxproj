@@ -145,6 +145,7 @@
   <ItemGroup>
     <ClInclude Include="collisions.h" />
     <ClInclude Include="clipdist.h" />
+    <ClInclude Include="objects.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
@@ -152,6 +153,7 @@
     <ClCompile Include="collisions.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="clipdist.cpp" />
+    <ClCompile Include="objects.cpp" />
     <ClCompile Include="sa2b-limit-break.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

@@ -7,6 +7,7 @@ extern "C"
 		const IniFile* config = new IniFile(std::string(path) + "\\config.ini");
 		
 		ClipDist_Init(config);
+		Objects_Init(config);
 		
 		if (config->getBool("Limits", "Collisions", true))
 		{
