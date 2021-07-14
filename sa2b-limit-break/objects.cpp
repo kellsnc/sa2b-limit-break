@@ -3,10 +3,12 @@
 #define TRAMPOLINE(name) ((decltype(name##_r)*)name##_t->Target())
 
 static constexpr int MaxPlayers = 2;
-static constexpr uint32_t SETCount = 4096;
-
-static SETObjectData SetTable[SETCount]{};
 static Trampoline* TaimatuExec_t = nullptr;
+
+#ifdef _DEBUG
+static constexpr uint32_t SETCount = 4096;
+static SETObjectData SetTable[SETCount]{};
+#endif
 
 static float GetDistance(NJS_VECTOR* orig, NJS_VECTOR* dest)
 {
