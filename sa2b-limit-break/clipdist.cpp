@@ -100,7 +100,7 @@ static void __declspec(naked) SETDistanceCheckThing2P_asm()
 		call SETDistanceCheckThing2P_c
 		add esp, 4 // ret
 		pop ecx // p2pos
-		add esp, 12
+		add esp, 16
 		retn
 	}
 }
