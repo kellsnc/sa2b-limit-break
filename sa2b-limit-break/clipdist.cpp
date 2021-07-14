@@ -30,7 +30,7 @@ static int __cdecl ClipObject_r(ObjectMaster* obj, float dist) {
 	}
 
 	NJS_VECTOR* pos = &obj->Data1.Entity->Position;
-	
+
 	if (isLoading == false && CameraData1 &&
 		SETDistanceCheckThing(&CameraData1->Position, pos->x, pos->y, pos->z, dist)) {
 		return 0;
@@ -41,7 +41,7 @@ static int __cdecl ClipObject_r(ObjectMaster* obj, float dist) {
 			return 0;
 		}
 	}
-	
+
 	obj->MainSub = DeleteObject_;
 	return 1;
 }
@@ -61,12 +61,8 @@ static void __declspec(naked) ClipObject_()
 	}
 }
 
-bool __cdecl SETDistanceCheckThing_r(SETObjectData* SETData, NJS_VECTOR* from, float x, float y, float z, float dist) {
-	ObjectListEntry* obj_entry = &CurrentObjectList->List[SETData->SETEntry->ID & 0x7FFF];
-
-	if (obj_entry->List > 1) {
-		dist *= ClipDistanceMultiplier;
-	}
+bool __cdecl SETDistanceCheckThing_r(NJS_VECTOR* from, float x, float y, float z, float dist) {
+	dist *= ClipDistanceMultiplier;
 
 	return SETDistanceCheckThing(from, x, y, z, dist);
 }
@@ -80,24 +76,16 @@ static void __declspec(naked) SETDistanceCheckThing_asm()
 		push[esp + 10h] // y
 		push[esp + 10h] // x
 		push ecx // from
-		push esi // hack to get SETObjectData
 		call SETDistanceCheckThing_r
-		pop esi
+		add esp, 4
 		pop ecx // from
-		add esp, 4 // x
-		add esp, 4 // y
-		add esp, 4 // z
-		add esp, 4 // dist
+		add esp, 12
 		retn
 	}
 }
 
-bool __cdecl SETDistanceCheckThing2P_r(SETObjectData* SETData, NJS_VECTOR* from, NJS_VECTOR* p2pos, float x, float y, float z, float dist) {
-	ObjectListEntry* obj_entry = &CurrentObjectList->List[SETData->SETEntry->ID & 0x7FFF];
-
-	if (obj_entry->List > 1) {
-		dist *= ClipDistanceMultiplier;
-	}
+bool __cdecl SETDistanceCheckThing2P_r(NJS_VECTOR* from, NJS_VECTOR* p2pos, float x, float y, float z, float dist) {
+	dist *= ClipDistanceMultiplier;
 
 	return SETDistanceCheckThing2P(from, p2pos, x, y, z, dist);
 }
@@ -112,15 +100,10 @@ static void __declspec(naked) SETDistanceCheckThing2P_asm()
 		push[esp + 10h] // x
 		push ecx // p2pos
 		push eax // from
-		push esi // hack to get SETObjectData
 		call SETDistanceCheckThing2P_r
 		add esp, 4 // from<eax> is also used for return value
-		pop esi
 		pop ecx // p2pos
-		add esp, 4 // x
-		add esp, 4 // y
-		add esp, 4 // z
-		add esp, 4 // dist
+		add esp, 12
 		retn
 	}
 }
@@ -166,7 +149,7 @@ void ClipDist_Init(const IniFile* config) {
 
 		ClipDistanceMultiplier = config->getInt("", "ClipMultiplier", ClipDistanceMultiplier);
 	}
-	
+
 	if (config->getBool("Clip", "LandDist", true)) {
 		LoadLandManager_t = new Trampoline((int)LoadLandManager, (int)LoadLandManager + 0x7, LoadLandManager_r);
 		LoadChunkLandManager_t = new Trampoline(0x492C70, 0x492C77, LoadChunkLandManager_r);
