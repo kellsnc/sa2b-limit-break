@@ -61,6 +61,7 @@ void Objects_Init(const IniFile* config)
 		WriteData<5>(reinterpret_cast<void*>(0x630B32), 0x90); // nop sound queue registering
 	}
 
+#ifdef _DEBUG
 	if (config->getBool("Limits", "SetList", true))
 	{
 		WriteData(reinterpret_cast<SETObjectData**>(0x488652), &SetTable[0]); //LOADSET_1P
@@ -79,4 +80,5 @@ void Objects_Init(const IniFile* config)
 		WriteData(reinterpret_cast<uint32_t*>(0x488BEC), SETCount);
 		WriteData(reinterpret_cast<uint32_t*>(0x488BF3), SETCount);
 	}
+#endif
 }
