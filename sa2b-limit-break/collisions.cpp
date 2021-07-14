@@ -118,7 +118,8 @@ static void __cdecl RunPlayerCollision_r()
 	}
 }
 
-static void __cdecl RunProjectileCollision_r() {
+static void __cdecl RunProjectileCollision_r()
+{
 	for (auto& i : entities[1])
 	{
 		for (auto& x : entities[0])
@@ -153,7 +154,8 @@ static void __cdecl RunProjectileCollision_r() {
 	}
 }
 
-static void __cdecl RunChaoCollision_r() {
+static void __cdecl RunChaoCollision_r()
+{
 	CheckSelfCollision(9);
 
 	for (auto& i : entities[9])
@@ -190,7 +192,8 @@ static void __cdecl RunChaoCollision_r() {
 	}
 }
 
-static void __cdecl RunEnemyCollision_r() {
+static void __cdecl RunEnemyCollision_r()
+{
 	CheckSelfCollision(3);
 
 	for (auto& i : entities[3])
@@ -350,10 +353,12 @@ static void __declspec(naked) ScanMechTargets_asm()
 
 signed int sub_486D60(int a1)
 {
-	if (!a1) {
+	if (!a1)
+	{
 		return TargetCollisions_LastCount;
 	}
-	else if (a1 == 1) {
+	else if (a1 == 1)
+	{
 		return EnemiesCollisions_LastCount;
 	}
 
@@ -479,7 +484,8 @@ bool sub_74A140(EntityData1* data, MechEggmanCharObj2* eggco2) {
 	return 1;
 }
 
-void Collisions_Init() {
+void Collisions_Init()
+{
 	WriteJump((void*)0x47E750, AddToCollisionList_asm);
 	WriteJump((void*)0x485920, RunPlayerCollision_r);
 	WriteJump((void*)0x485B20, RunProjectileCollision_r);

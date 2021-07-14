@@ -8,7 +8,8 @@ extern "C"
 		
 		ClipDist_Init(config);
 		
-		if (config->getBool("Collisions", "Collisions", true)) {
+		if (config->getBool("Limits", "Collisions", true))
+		{
 			Collisions_Init();
 		}
 		
