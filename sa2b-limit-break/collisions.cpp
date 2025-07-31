@@ -29,7 +29,7 @@ static void __cdecl AddToCollisionList_r(ObjectMaster* obj)
 	{
 		Collision_InitThings(obj);
 
-		const auto list = collision->char0; // collision->List
+		const auto list = collision->Id; // collision->List
 
 		if (list < 0 || list > 9)
 		{
@@ -324,7 +324,7 @@ static void __cdecl ScanMechTargets_r(CharObj2Base* co2, MechEggmanCharObj2* egg
 						eggco2->field_394 = targetpos->y;
 						eggco2->field_398 = targetpos->z;
 						eggco2->field_366 = 7;
-						targettask->field_1C = (ObjectFuncPtr)0x74BEC0;
+						targettask->DisplaySub_Delayed1 = (ObjectFuncPtr)0x74BEC0;
 						targettask->DeleteSub = (ObjectFuncPtr)0x74BDB0;
 						PlaySoundProbably(8207, 0, 0, 0);
 					}

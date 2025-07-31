@@ -107,7 +107,7 @@ static void __declspec(naked) SETDistanceCheckThing2P_asm()
 
 void IncreaseLandTable(LandTable* land)
 {
-	land->field_C *= LandClipDistanceMultiplier;
+	land->ClippingDistance *= LandClipDistanceMultiplier;
 
 	// Remove chunks
 	if (RemoveChunks == true)
@@ -118,7 +118,7 @@ void IncreaseLandTable(LandTable* land)
 
 			if (currentcol->Flags & SurfaceFlag_Visible)
 			{
-				currentcol->field_18 = 0;
+				currentcol->Chunks = 0;
 			}
 		}
 	}
