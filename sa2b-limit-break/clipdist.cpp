@@ -5,75 +5,115 @@ static Uint32 ClipDistanceMultiplier = 70;
 static Uint32 LandClipDistanceMultiplier = 5;
 static bool RemoveChunks = false;
 
-FastFunctionHook<void, LandTable*> LoadLandManager_h(0x47BD30);
-FastFunctionHook<void, LandTable*> LoadChunkLandManager_h(0x492C70);
+FastFunctionHook<void> ListGroundForDrawing_h(0x47CAE0);
 FastUsercallHookPtr<Bool(*)(NJS_VECTOR*, Float, Float, Float, Float), rEAX, rECX, stack4, stack4, stack4, stack4> SETDistanceCheckThing_h(0x488340);
 FastUsercallHookPtr<Bool(*)(NJS_VECTOR*, NJS_VECTOR*, Float, Float, Float, Float), rEAX, rECX, stack4, stack4, stack4, stack4> SETDistanceCheckThing2P_h(0x4881F0);
 
+DataArray(int, MaskBlock, 0x174B060, 2);
+DataArray(int, DisplayBlock, 0x174B068, 2);
+DataPointer(int, numDisplayEntry, 0x1945A00);
+DataPointer(COL**, pDisplayEntry, 0x1A5A2E4);
+
+#define SHORT_ANG(ang) ((ang) & 0xFFFF)
+#define ROTATEX(m, ang) if (ang != 0) njRotateX(m, SHORT_ANG(ang));
+#define ROTATEY(m, ang) if (ang != 0) njRotateY(m, SHORT_ANG(ang));
+#define ROTATEZ(m, ang) if (ang != 0) njRotateZ(m, SHORT_ANG(ang));
+
 Bool __cdecl SETDistanceCheckThing_r(NJS_VECTOR* from, Float x, Float y, Float z, Float dist)
 {
-	// Multiply the distance by the configured multiplier.
-	dist *= ClipDistanceMultiplier;
-
-	return SETDistanceCheckThing_h.Original(from, x, y, z, dist);
+	return SETDistanceCheckThing_h.Original(from, x, y, z, dist * ClipDistanceMultiplier);
 }
 
 Bool __cdecl SETDistanceCheckThing2P_r(NJS_VECTOR* from, NJS_VECTOR* p2pos, Float x, Float y, Float z, Float dist)
 {
-	// Multiply the distance by the configured multiplier.
-	dist *= ClipDistanceMultiplier;
-
-	return SETDistanceCheckThing2P_h.Original(from, p2pos, x, y, z, dist);
+	return SETDistanceCheckThing2P_h.Original(from, p2pos, x, y, z, dist * ClipDistanceMultiplier);
 }
 
-// Todo: don't do this
-void IncreaseLandTable(LandTable* land)
+void __cdecl ListGroundForDrawing_r()
 {
-	land->ClippingDistance *= LandClipDistanceMultiplier;
+	auto land = CurrentLandTable;
+	int screen = CurrentScreen;
+	int maskblock = MaskBlock[screen ? 1 : 0];
 
-	// Remove chunks
-	if (RemoveChunks == true)
+	float clippingDistance = CurrentLandTable->ClippingDistance * LandClipDistanceMultiplier;
+	ChunkLandTable.ClippingDistance = clippingDistance;
+
+	auto camloc = pCameraLocations[screen];
+
+	NJS_VECTOR v = { 0.0f, 0.0f, -0.5f * clippingDistance };
+	njPushMatrix(_nj_unit_matrix_);
+	ROTATEY(_nj_current_matrix_ptr_, camloc->ang.y);
+	ROTATEX(_nj_current_matrix_ptr_, camloc->ang.x);
+	njCalcPoint(_nj_current_matrix_ptr_, &v, &v, 0);
+	njPopMatrix(1);
+
+	NJS_VECTOR center;
+	center.x = camloc->pos.x + v.x;
+	center.y = camloc->pos.y + v.y;
+	center.z = camloc->pos.z + v.z;
+
+	int displayblock = RemoveChunks ? 0xFFFFFFFF : (GetLandChunksAt(camloc->pos.x, camloc->pos.z) & maskblock);
+	DisplayBlock[screen ? 1 : 0] = displayblock;
+
+	int count = 0;
+	if (CurrentLandTable->VisibleModelCount < 0)
 	{
-		for (int col = 0; col < land->COLCount; ++col)
-		{
-			COL* currentcol = &land->COLList[col];
+		count = CurrentLandTable->COLCount;
+	}
+	else
+	{
+		count = CurrentLandTable->VisibleModelCount;
+	}
 
-			if (currentcol->Flags & SurfaceFlag_Visible)
+	int numEntry = 0;
+
+	for (int i = 0; i < count; ++i)
+	{
+		auto col = &CurrentLandTable->COLList[i];
+		if (col->Chunks == 0 || (col->Chunks & displayblock))
+		{
+			if (col->Flags & SurfaceFlag_Visible)
 			{
-				currentcol->Chunks = 0;
+				float dist;
+				if (col->Flags & 0x800000)
+				{
+					dist = MaxDrawDistance + col->Radius;
+				}
+				else
+				{
+					dist = clippingDistance * 0.5f + col->Radius;
+				}
+
+				Float x = center.x - col->Center.x;
+				Float y = center.y - col->Center.y;
+				Float z = center.z - col->Center.z;
+
+				if (x * x + y * y + z * z <= dist * dist)
+				{
+					pDisplayEntry[numEntry++] = col;
+					if (numEntry >= 1024)
+						break;
+				}
 			}
 		}
 	}
-}
 
-void __cdecl LoadLandManager_r(LandTable* land)
-{
-	IncreaseLandTable(land);
-	LoadLandManager_h.Original(land);
-}
-
-void __cdecl LoadChunkLandManager_r(LandTable* land)
-{
-	IncreaseLandTable(land);
-	LoadChunkLandManager_h.Original(land);
+	numDisplayEntry = numEntry;
 }
 
 void ClipDist_Init(const IniFile* config)
 {
 	if (config->getBool("Clip", "ClipDist", true))
 	{
+		ClipDistanceMultiplier = config->getInt("Clip", "ClipMultiplier", ClipDistanceMultiplier);
 		SETDistanceCheckThing_h.Hook(SETDistanceCheckThing_r);
 		SETDistanceCheckThing2P_h.Hook(SETDistanceCheckThing2P_r);
-
-		ClipDistanceMultiplier = config->getInt("Clip", "ClipMultiplier", ClipDistanceMultiplier);
 	}
 	
 	if (config->getBool("Clip", "LandDist", true))
 	{
-		LoadLandManager_h.Hook(LoadLandManager_r);
-		LoadChunkLandManager_h.Hook(LoadChunkLandManager_r);
-
 		LandClipDistanceMultiplier = config->getInt("Clip", "LandMultiplier", LandClipDistanceMultiplier);
 		RemoveChunks = config->getBool("Clip", "RemoveChunks", RemoveChunks);
+		WriteJump(ListGroundForDrawing, ListGroundForDrawing_r);
 	}
 }
