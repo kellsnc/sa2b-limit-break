@@ -91,6 +91,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;SA2BLIMITBREAK_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)..\sa2-mod-loader\libmodutils;$(ProjectDir)..\sa2-mod-loader\mod-loader-common\ModLoaderCommon;$(ProjectDir)..\sa2-mod-loader\SA2ModLoader\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SupportJustMyCode>false</SupportJustMyCode>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -153,6 +154,7 @@
     <ClCompile Include="collisions.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="clipdist.cpp" />
+    <ClCompile Include="FastFunctionHook.cpp" />
     <ClCompile Include="objects.cpp" />
     <ClCompile Include="sa2b-limit-break.cpp" />
     <ClCompile Include="stdafx.cpp">

@@ -53,5 +53,8 @@
     <ClCompile Include="objects.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
+    <ClCompile Include="FastFunctionHook.cpp">
+      <Filter>Fichiers sources\Extern</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

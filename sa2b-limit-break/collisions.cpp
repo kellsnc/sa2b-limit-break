@@ -1,5 +1,27 @@
 #include "stdafx.h"
 
+FastcallFunctionPointer(signed int, sub_46DE60, (int a1, int a2), 0x46DE60);
+
+struct TargetThing
+{
+	int unk0;
+	int unk4;
+	__int8 playernum;
+	__int8 unk9;
+	__int16 unkA;
+	int unkC;
+	NJS_VECTOR position;
+	ObjectMaster* target;
+};
+
+UsercallFunctionPtr<void(*)(ObjectMaster* obj), noret, rEAX> CCL_ClearInfo(0x47E6C0);
+UsercallFunctionPtr<ObjectMaster*(*)(ObjectMaster* player, CharObj2Base* co2, float* dist_output), rEAX, rEBX, rESI, stack4> GetTargetPlayer(0x74CC40);
+UsercallFunctionPtr<ObjectMaster*(*)(int colcount, CharObj2Base* co2, ObjectMaster** collist, float* dist_output), rEAX, rEAX, rEDX, rECX, stack4> GetTargetCollision(0x74CB30);
+UsercallFunctionPtr<Sint32(*)(ObjectMaster* obj), rEAX, rEAX> GetObjectColList(0x486CB0);
+UsercallFunctionPtr<void(*)(EntityData1* data, CollisionData* col, NJS_VECTOR* out_vec), noret, rEAX, rEDI, stack4> ColliCalcCenter(0x47EEC0);
+UsercallFunctionPtr<void(*)(MechEggmanCharObj2* eggco2, ObjectMaster* obj), noret, rECX, rESI> sub_74AE30(0x74AE30);
+
+
 namespace CollisionList
 {
 	enum _enum
@@ -27,7 +49,7 @@ static void __cdecl AddToCollisionList_r(ObjectMaster* obj)
 
 	if (collision && collision->Object->MainSub != DeleteObject_)
 	{
-		Collision_InitThings(obj);
+		CCL_ClearInfo(obj);
 
 		const auto list = collision->Id; // collision->List
 
@@ -303,7 +325,7 @@ static void __cdecl ScanMechTargets_r(CharObj2Base* co2, MechEggmanCharObj2* egg
 						targettask->Data2.Undefined = targettask_data2;
 						targettask_data2->playernum = playernum;
 						target_data = target->Data1.Entity;
-						sub_47EEC0(target_data, target_data->Collision->CollisionArray, &targettask_data2->position);
+						ColliCalcCenter(target_data, target_data->Collision->CollisionArray, &targettask_data2->position);
 						targettask_data2->target = target;
 						if (GetObjectColList(target))
 						{
@@ -452,7 +474,7 @@ bool sub_74A140(EntityData1* data, MechEggmanCharObj2* eggco2) {
 						v17 = v14->CollisionArray;
 						if (v17->kind != 12)
 						{
-							sub_47EEC0(v16, v17, &vec1);
+							ColliCalcCenter(v16, v17, &vec1);
 							vec2.x = 1.0;
 							vec2.z = 0.0;
 							vec2.y = 0.0;

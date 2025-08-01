@@ -1,110 +1,32 @@
 #include "stdafx.h"
+#include "FastFunctionHook.hpp"
 
 static Uint32 ClipDistanceMultiplier = 70;
 static Uint32 LandClipDistanceMultiplier = 5;
-
-static Trampoline* LoadLandManager_t;
-static Trampoline* LoadChunkLandManager_t;
-
-static Trampoline* SETDistanceCheckThing_t;
-static Trampoline* SETDistanceCheckThing2P_t;
-
 static bool RemoveChunks = false;
 
-signed int __cdecl SETDistanceCheckThing_original(NJS_VECTOR* from, float x, float y, float z, float dist)
+FastFunctionHook<void, LandTable*> LoadLandManager_h(0x47BD30);
+FastFunctionHook<void, LandTable*> LoadChunkLandManager_h(0x492C70);
+FastUsercallHookPtr<Bool(*)(NJS_VECTOR*, Float, Float, Float, Float), rEAX, rECX, stack4, stack4, stack4, stack4> SETDistanceCheckThing_h(0x488340);
+FastUsercallHookPtr<Bool(*)(NJS_VECTOR*, NJS_VECTOR*, Float, Float, Float, Float), rEAX, rECX, stack4, stack4, stack4, stack4> SETDistanceCheckThing2P_h(0x4881F0);
+
+Bool __cdecl SETDistanceCheckThing_r(NJS_VECTOR* from, Float x, Float y, Float z, Float dist)
 {
-	const auto fptr = SETDistanceCheckThing_t->Target();
-
-	signed int result;
-
-	__asm
-	{
-		push[dist]
-		push[z]
-		push[y]
-		push[x]
-		mov ecx, [from]
-		call fptr
-		mov result, eax
-		add esp, 16
-	}
-
-	return result;
-}
-
-signed int __cdecl SETDistanceCheckThing_c(NJS_VECTOR* from, float x, float y, float z, float dist)
-{
-	// Multiply the distance by the specific multiplier.
+	// Multiply the distance by the configured multiplier.
 	dist *= ClipDistanceMultiplier;
 
-	return SETDistanceCheckThing_original(from, x, y, z, dist);
+	return SETDistanceCheckThing_h.Original(from, x, y, z, dist);
 }
 
-static void __declspec(naked) SETDistanceCheckThing_asm()
+Bool __cdecl SETDistanceCheckThing2P_r(NJS_VECTOR* from, NJS_VECTOR* p2pos, Float x, Float y, Float z, Float dist)
 {
-	__asm
-	{
-		push[esp + 10h] // dist
-		push[esp + 10h] // z
-		push[esp + 10h] // y
-		push[esp + 10h] // x
-		push ecx // from
-		call SETDistanceCheckThing_c
-		add esp, 4 // ret
-		pop ecx // from
-		add esp, 12
-		retn
-	}
-}
-
-signed int __cdecl SETDistanceCheckThing2P_original(NJS_VECTOR* from, NJS_VECTOR* p2pos, float x, float y, float z, float dist)
-{
-	const auto fptr = SETDistanceCheckThing2P_t->Target();
-
-	signed int result;
-
-	__asm
-	{
-		push[dist]
-		push[z]
-		push[y]
-		push[x]
-		mov ecx, [p2pos]
-		mov eax, [from]
-		call fptr
-		mov result, eax
-		add esp, 16
-	}
-
-	return result;
-}
-
-signed int __cdecl SETDistanceCheckThing2P_c(NJS_VECTOR* from, NJS_VECTOR* p2pos, float x, float y, float z, float dist)
-{
-	// Multiply the distance by the specific multiplier.
+	// Multiply the distance by the configured multiplier.
 	dist *= ClipDistanceMultiplier;
 
-	return SETDistanceCheckThing2P_original(from, p2pos, x, y, z, dist);
+	return SETDistanceCheckThing2P_h.Original(from, p2pos, x, y, z, dist);
 }
 
-static void __declspec(naked) SETDistanceCheckThing2P_asm()
-{
-	__asm
-	{
-		push[esp + 10h] // dist
-		push[esp + 10h] // z
-		push[esp + 10h] // y
-		push[esp + 10h] // x
-		push ecx // p2pos
-		push eax // from
-		call SETDistanceCheckThing2P_c
-		add esp, 4 // ret
-		pop ecx // p2pos
-		add esp, 16
-		retn
-	}
-}
-
+// Todo: don't do this
 void IncreaseLandTable(LandTable* land)
 {
 	land->ClippingDistance *= LandClipDistanceMultiplier;
@@ -126,36 +48,30 @@ void IncreaseLandTable(LandTable* land)
 
 void __cdecl LoadLandManager_r(LandTable* land)
 {
-	NonStaticFunctionPointer(void, original, (LandTable * land), LoadLandManager_t->Target());
-
 	IncreaseLandTable(land);
-
-	original(land);
+	LoadLandManager_h.Original(land);
 }
 
 void __cdecl LoadChunkLandManager_r(LandTable* land)
 {
-	NonStaticFunctionPointer(void, original, (LandTable * land), LoadChunkLandManager_t->Target());
-
 	IncreaseLandTable(land);
-
-	original(land);
+	LoadChunkLandManager_h.Original(land);
 }
 
 void ClipDist_Init(const IniFile* config)
 {
 	if (config->getBool("Clip", "ClipDist", true))
 	{
-		SETDistanceCheckThing_t = new Trampoline(0x488340, 0x488346, SETDistanceCheckThing_asm, false);
-		SETDistanceCheckThing2P_t = new Trampoline(0x4881F0, 0x4881F5, SETDistanceCheckThing2P_asm, false);
+		SETDistanceCheckThing_h.Hook(SETDistanceCheckThing_r);
+		SETDistanceCheckThing2P_h.Hook(SETDistanceCheckThing2P_r);
 
 		ClipDistanceMultiplier = config->getInt("Clip", "ClipMultiplier", ClipDistanceMultiplier);
 	}
 	
 	if (config->getBool("Clip", "LandDist", true))
 	{
-		LoadLandManager_t = new Trampoline((int)LoadLandManager, (int)LoadLandManager + 0x7, LoadLandManager_r, false);
-		LoadChunkLandManager_t = new Trampoline(0x492C70, 0x492C77, LoadChunkLandManager_r, false);
+		LoadLandManager_h.Hook(LoadLandManager_r);
+		LoadChunkLandManager_h.Hook(LoadChunkLandManager_r);
 
 		LandClipDistanceMultiplier = config->getInt("Clip", "LandMultiplier", LandClipDistanceMultiplier);
 		RemoveChunks = config->getBool("Clip", "RemoveChunks", RemoveChunks);
