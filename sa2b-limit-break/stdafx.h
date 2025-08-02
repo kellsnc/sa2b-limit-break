@@ -11,7 +11,3 @@
 #include "SA2ModLoader.h"
 #include "IniFile.hpp"
 #include "FastFunctionHook.hpp"
-
-#include "collisions.h"
-#include "clipdist.h"
-#include "objects.h"

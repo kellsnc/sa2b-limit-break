@@ -1,4 +1,8 @@
 #include "stdafx.h"
+#include "clipdist.h"
+#include "objects.h"
+#include "sound.h"
+#include "collisions.h"
 
 extern "C"
 {
@@ -8,6 +12,7 @@ extern "C"
 		
 		ClipDist_Init(config);
 		Objects_Init(config);
+		Sound_Init(config);
 		
 		if (config->getBool("Limits", "Collisions", true))
 		{
