@@ -1,3 +1,5 @@
 #pragma once
 
-void Collisions_Init();
+#include "IniFile.hpp"
+
+void Collisions_Init(const IniFile* config);

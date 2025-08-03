@@ -146,6 +146,7 @@
   <ItemGroup>
     <ClInclude Include="collisions.h" />
     <ClInclude Include="clipdist.h" />
+    <ClInclude Include="drawqueue.h" />
     <ClInclude Include="objects.h" />
     <ClInclude Include="sound.h" />
     <ClInclude Include="stdafx.h" />
@@ -155,6 +156,7 @@
     <ClCompile Include="collisions.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="clipdist.cpp" />
+    <ClCompile Include="drawqueue.cpp" />
     <ClCompile Include="FastFunctionHook.cpp" />
     <ClCompile Include="objects.cpp" />
     <ClCompile Include="sa2b-limit-break.cpp" />
