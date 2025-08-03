@@ -1,5 +1,8 @@
 #include "stdafx.h"
+#include "SA2ModLoader.h"
+#include "IniFile.hpp"
 #include "FastFunctionHook.hpp"
+#include "clip.h"
 
 static Uint32 ClipDistanceMultiplier = 70;
 static Uint32 LandClipDistanceMultiplier = 5;
@@ -101,7 +104,7 @@ void __cdecl ListGroundForDrawing_r()
 	numDisplayEntry = numEntry;
 }
 
-void ClipDist_Init(const IniFile* config)
+void Clip_Init(const IniFile* config)
 {
 	if (config->getBool("Clip", "ClipDist", true))
 	{

@@ -1,5 +1,8 @@
 #include "stdafx.h"
+#include "SA2ModLoader.h"
+#include "IniFile.hpp"
 #include "FastFunctionHook.hpp"
+#include "drawqueue.h"
 
 // Expand draw sorting queue if needed
 

@@ -2,13 +2,14 @@
 #include "SA2ModLoader.h"
 #include "IniFile.hpp"
 #include "FastFunctionHook.hpp"
+#include "set.h"
 
 #ifdef _DEBUG
 static constexpr uint32_t SETCount = 4096;
 static SETObjectData SetTable[SETCount]{};
 #endif
 
-void Objects_Init(const IniFile* config)
+void Set_Init(const IniFile* config)
 {
 #ifdef _DEBUG
 	if (config->getBool("Limits", "SetList", true))

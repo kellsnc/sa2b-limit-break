@@ -16,6 +16,9 @@
     <Filter Include="Fichiers sources\Extern">
       <UniqueIdentifier>{5bf71770-f932-4383-b37b-1b5532807562}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Fichiers d%27en-tête\extern">
+      <UniqueIdentifier>{c66c5bdc-f382-4624-b86d-81511c628a4b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -24,13 +27,13 @@
     <ClInclude Include="targetver.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="collisions.h">
+    <ClInclude Include="collision.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="clipdist.h">
+    <ClInclude Include="clip.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="objects.h">
+    <ClInclude Include="set.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="sound.h">
@@ -38,6 +41,12 @@
     </ClInclude>
     <ClInclude Include="drawqueue.h">
       <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="FastFunctionHook.hpp">
+      <Filter>Fichiers d%27en-tête\extern</Filter>
+    </ClInclude>
+    <ClInclude Include="hde32.h">
+      <Filter>Fichiers d%27en-tête\extern</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -50,13 +59,13 @@
     <ClCompile Include="dllmain.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="collisions.cpp">
+    <ClCompile Include="collision.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="clipdist.cpp">
+    <ClCompile Include="clip.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="objects.cpp">
+    <ClCompile Include="set.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="FastFunctionHook.cpp">

@@ -1,4 +1,8 @@
 #include "stdafx.h"
+#include "SA2ModLoader.h"
+#include "IniFile.hpp"
+#include "FastFunctionHook.hpp"
+#include "collision.h"
 
 FastcallFunctionPointer(signed int, sub_46DE60, (int a1, int a2), 0x46DE60);
 
@@ -20,7 +24,6 @@ UsercallFunctionPtr<ObjectMaster*(*)(int colcount, CharObj2Base* co2, ObjectMast
 UsercallFunctionPtr<Sint32(*)(ObjectMaster* obj), rEAX, rEAX> GetObjectColList(0x486CB0);
 UsercallFunctionPtr<void(*)(EntityData1* data, CollisionData* col, NJS_VECTOR* out_vec), noret, rEAX, rEDI, stack4> ColliCalcCenter(0x47EEC0);
 UsercallFunctionPtr<void(*)(MechEggmanCharObj2* eggco2, ObjectMaster* obj), noret, rECX, rESI> sub_74AE30(0x74AE30);
-
 
 namespace CollisionList
 {
