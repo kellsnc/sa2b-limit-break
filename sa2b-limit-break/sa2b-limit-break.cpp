@@ -6,6 +6,7 @@
 #include "set.h"
 #include "sound.h"
 #include "collision.h"
+#include "dynacol.h"
 #include "drawqueue.h"
 
 #ifdef _DEBUG
@@ -26,6 +27,7 @@ extern "C"
 		Set_Init(config);
 		Sound_Init(config);
 		Collisions_Init(config);
+		Dynacol_Init(config);
 		DrawQueue_Init(config);
 		
 		delete(config);

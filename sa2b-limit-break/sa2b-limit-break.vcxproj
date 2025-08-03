@@ -147,6 +147,7 @@
     <ClInclude Include="collision.h" />
     <ClInclude Include="clip.h" />
     <ClInclude Include="drawqueue.h" />
+    <ClInclude Include="dynacol.h" />
     <ClInclude Include="FastFunctionHook.hpp" />
     <ClInclude Include="hde32.h" />
     <ClInclude Include="set.h" />
@@ -159,6 +160,7 @@
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="clip.cpp" />
     <ClCompile Include="drawqueue.cpp" />
+    <ClCompile Include="dynacol.cpp" />
     <ClCompile Include="FastFunctionHook.cpp" />
     <ClCompile Include="set.cpp" />
     <ClCompile Include="sa2b-limit-break.cpp" />

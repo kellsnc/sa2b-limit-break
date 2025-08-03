@@ -48,6 +48,9 @@
     <ClInclude Include="hde32.h">
       <Filter>Fichiers d%27en-tête\extern</Filter>
     </ClInclude>
+    <ClInclude Include="dynacol.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -75,6 +78,9 @@
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="drawqueue.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="dynacol.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>
