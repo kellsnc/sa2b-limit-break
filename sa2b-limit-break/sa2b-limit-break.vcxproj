@@ -150,6 +150,7 @@
     <ClInclude Include="dynacol.h" />
     <ClInclude Include="FastFunctionHook.hpp" />
     <ClInclude Include="hde32.h" />
+    <ClInclude Include="objects.h" />
     <ClInclude Include="set.h" />
     <ClInclude Include="sound.h" />
     <ClInclude Include="stdafx.h" />
@@ -162,6 +163,7 @@
     <ClCompile Include="drawqueue.cpp" />
     <ClCompile Include="dynacol.cpp" />
     <ClCompile Include="FastFunctionHook.cpp" />
+    <ClCompile Include="objects.cpp" />
     <ClCompile Include="set.cpp" />
     <ClCompile Include="sa2b-limit-break.cpp" />
     <ClCompile Include="sound.cpp" />

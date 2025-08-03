@@ -8,6 +8,7 @@
 #include "collision.h"
 #include "dynacol.h"
 #include "drawqueue.h"
+#include "objects.h"
 
 #ifdef _DEBUG
 const HelperFunctions* gHelperFunctions;
@@ -29,6 +30,7 @@ extern "C"
 		Collisions_Init(config);
 		Dynacol_Init(config);
 		DrawQueue_Init(config);
+		Objects_Init(config);
 		
 		delete(config);
 	}
