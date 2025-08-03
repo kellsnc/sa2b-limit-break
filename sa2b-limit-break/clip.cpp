@@ -9,8 +9,10 @@ static Uint32 LandClipDistanceMultiplier = 5;
 static bool RemoveChunks = false;
 
 FastFunctionHook<void> ListGroundForDrawing_h(0x47CAE0);
-FastUsercallHookPtr<Bool(*)(NJS_VECTOR*, Float, Float, Float, Float), rEAX, rECX, stack4, stack4, stack4, stack4> SETDistanceCheckThing_h(0x488340);
-FastUsercallHookPtr<Bool(*)(NJS_VECTOR*, NJS_VECTOR*, Float, Float, Float, Float), rEAX, rECX, stack4, stack4, stack4, stack4> SETDistanceCheckThing2P_h(0x4881F0);
+FastUsercallHookPtr<Bool(*)(NJS_VECTOR*, Float, Float, Float, Float), rEAX, rECX, stack4, stack4, stack4, stack4> CheckRangeXYZRP_h(0x488340);
+FastUsercallHookPtr<Bool(*)(NJS_VECTOR*, NJS_VECTOR*, Float, Float, Float, Float), rEAX, rECX, stack4, stack4, stack4, stack4> CheckRange2PXYZRP_h(0x4881F0);
+
+UsercallFunctionPtr<int(*)(int fallback, float x, float z), rEAX, rECX, stack4, stack4> GetBlockbitFromMap(0x47C8D0);
 
 DataArray(int, MaskBlock, 0x174B060, 2);
 DataArray(int, DisplayBlock, 0x174B068, 2);
@@ -22,14 +24,14 @@ DataPointer(COL**, pDisplayEntry, 0x1A5A2E4);
 #define ROTATEY(m, ang) if (ang != 0) njRotateY(m, SHORT_ANG(ang));
 #define ROTATEZ(m, ang) if (ang != 0) njRotateZ(m, SHORT_ANG(ang));
 
-Bool __cdecl SETDistanceCheckThing_r(NJS_VECTOR* from, Float x, Float y, Float z, Float dist)
+Bool __cdecl CheckRangeXYZRP_r(NJS_VECTOR* from, Float x, Float y, Float z, Float dist)
 {
-	return SETDistanceCheckThing_h.Original(from, x, y, z, dist * ClipDistanceMultiplier);
+	return CheckRangeXYZRP_h.Original(from, x, y, z, dist * ClipDistanceMultiplier);
 }
 
-Bool __cdecl SETDistanceCheckThing2P_r(NJS_VECTOR* from, NJS_VECTOR* p2pos, Float x, Float y, Float z, Float dist)
+Bool __cdecl CheckRange2PXYZRP_r(NJS_VECTOR* from, NJS_VECTOR* p2pos, Float x, Float y, Float z, Float dist)
 {
-	return SETDistanceCheckThing2P_h.Original(from, p2pos, x, y, z, dist * ClipDistanceMultiplier);
+	return CheckRange2PXYZRP_h.Original(from, p2pos, x, y, z, dist * ClipDistanceMultiplier);
 }
 
 void __cdecl ListGroundForDrawing_r()
@@ -55,7 +57,7 @@ void __cdecl ListGroundForDrawing_r()
 	center.y = camloc->pos.y + v.y;
 	center.z = camloc->pos.z + v.z;
 
-	int displayblock = RemoveChunks ? 0xFFFFFFFF : (GetLandChunksAt(camloc->pos.x, camloc->pos.z) & maskblock);
+	int displayblock = RemoveChunks ? 0xFFFFFFFF : (GetBlockbitFromMap(maskblock, camloc->pos.x, camloc->pos.z) & maskblock);
 	DisplayBlock[screen ? 1 : 0] = displayblock;
 
 	int count = 0;
@@ -109,8 +111,8 @@ void Clip_Init(const IniFile* config)
 	if (config->getBool("Clip", "ClipDist", true))
 	{
 		ClipDistanceMultiplier = config->getInt("Clip", "ClipMultiplier", ClipDistanceMultiplier);
-		SETDistanceCheckThing_h.Hook(SETDistanceCheckThing_r);
-		SETDistanceCheckThing2P_h.Hook(SETDistanceCheckThing2P_r);
+		CheckRangeXYZRP_h.Hook(CheckRangeXYZRP_r);
+		CheckRange2PXYZRP_h.Hook(CheckRange2PXYZRP_r);
 	}
 	
 	if (config->getBool("Clip", "LandDist", true))
