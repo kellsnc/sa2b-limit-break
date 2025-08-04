@@ -11,30 +11,33 @@
 
 typedef struct _SEcallbuf
 {
-	Sint8 unk1;
-	Sint8 unk2;
-	Sint8 banknum;
-	Sint8 angle;
+	Sint8 banknum; // Bank ID
+	Sint8 soundnum; // Sound ID
+	Sint8 pri;
+	Sint8 angle; // Panning
 	Sint8 vol3D;
 	Sint8 vol;
 	Sint8 volmax;
-	Sint8 unk3;
+	Sint8 unknown_flags;
 	Sint16 flags;
-	Sint16 unk4;
+	Sint16 dist;
 	Sint16 timer;
-	Sint16 timer2;
-	Sint32 id;
-	Sint32 tone;
+	Sint16 timer2; // Restart timer for some dsPlay functions (flag 0x4000)
+	Sint32 id; // Used to identify the sound. Can be a task pointer (if flag 0x1000 is set, sound is auto removed when task is deleted.)
+	Sint32 tone; // Bank and sound IDs (0xBSSS)
 	NJS_POINT3* pos_ptr;
 	NJS_POINT3 pos;
-	Float dist;
-	Float dist2;
+	Float fdistmax;
+	Float fdist; // Distance from camera before conversion to Sint16 (dist)
 } SEcallbuf;
 
-FastUsercallHookPtr<Sint8(*)(Sint32 tone, NJS_POINT3* pos, Sint32 id, Sint8 bank, Sint8 volume, Sint16 timer), rAL, rEDI, rESI, rEBX, stack4, stack4, stack4> dsPlay_timer_v_437590_h(0x437590);
-FastUsercallHookPtr<Sint8(*)(Sint32 tone, NJS_POINT3* pos, Sint32 id, Sint8 bank, Sint8 volume, Sint16 timer), rAL, rEDI, rESI, rEBX, stack4, stack4, stack4> dsPlay_timer_v_437710_h(0x437710);
-FastUsercallHookPtr<Sint8(*)(task* tp, Sint32 tone, Sint8 volume, Sint16 timer), rAL, rEAX, rECX, stack4, stack4> dsPlay_timer_v_437BB0_h(0x437BB0);
+UsercallFunctionPtr<MLTSoundEntry* (*)(int), rEAX, rECX> GetMLTSoundEntry(0x436180);
+
+FastUsercallHookPtr<Sint8(*)(Sint32 tone, NJS_POINT3* pos, Sint32 id, Sint8 pri, Sint8 volume, Sint16 timer), rAL, rEDI, rESI, rEBX, stack4, stack4, stack4> dsPlay_timer_v_437590_h(0x437590);
+FastUsercallHookPtr<Sint8(*)(Sint32 tone, NJS_POINT3* pos, Sint32 id, Sint8 pri, Sint8 volume, Sint16 timer), rAL, rEDI, rESI, rEBX, stack4, stack4, stack4> dsPlay_timer_v_437710_h(0x437710);
+FastUsercallHookPtr<Sint8(*)(task* tp, Sint32 tone, Sint8 volume, Sint16 timer), rAL, rEAX, rECX, stack4, stack4> dsPlay_timer_tp_437BB0_h(0x437BB0);
 FastUsercallHookPtr<Sint8(*)(Sint32 tone, NJS_POINT3* pos, Sint32 id, Sint8 volume, Sint16 timer), rAL, rEDI, rESI, stack4, stack4, stack4> dsPlay_timer_v_437D10_h(0x437D10);
+FastUsercallHookPtr<Sint8(*)(Sint32 tone, NJS_POINT3* pos, Sint32 id, Sint8 pri, Sint8 volume), rAL, rEDI, rESI, stack4, stack4, stack4> dsPlay_oneshsot_v_h(0x4372E0);
 
 FastUsercallHookPtr<Sint8(*)(Sint32 tone, NJS_VECTOR* pos, Sint32 id, Sint8 volume), rAL, rEDI, rESI, rEBX, stack4> dsPlay_iloop_v_h(0x437420);
 FastUsercallHookPtr<Sint8(*)(task* tp, Sint32 tone, Sint8 volume), rAL, rEAX, rECX, stack4> dsPlay_iloop_tp_h(0x437A30);
@@ -44,7 +47,7 @@ FastUsercallHookPtr<void(*)(Sint32 id, Sint32 tone), noret, rEDX, rESI> dsStop_t
 FastFunctionHook<void> dsStop_all_h(0x437E90);
 FastFunctionHook<void> dsSoundServer_h(0x438750);
 
-bool CheckSoundDistance(NJS_VECTOR* position, float radius);
+bool CheckSoundDistance(Sint32 id, NJS_VECTOR* position);
 bool CheckSoundExists(Sint32 id, Sint32 tone);
 
 struct iloop_v_data
@@ -58,7 +61,7 @@ struct iloop_v_data
 
 	void Exec()
 	{
-		if (CheckSoundDistance(&pos, 600.0f))
+		if (CheckSoundDistance(tone, &pos))
 		{
 			if (soundid == -1 && !CheckSoundExists(id, tone))
 			{
@@ -86,7 +89,7 @@ struct iloop_tp_data
 
 	void Exec()
 	{
-		if (tp && tp->Data1.twp && CheckSoundDistance(&tp->Data1.twp->pos, 600.0f) && !CheckSoundExists((Sint32)tp, tone))
+		if (tp && tp->Data1.twp && CheckSoundDistance(tone, &tp->Data1.twp->pos) && !CheckSoundExists((Sint32)tp, tone))
 		{
 			if (soundid == -1)
 			{
@@ -107,8 +110,12 @@ struct iloop_tp_data
 std::list<iloop_v_data> iloop_v_queue;
 std::list<iloop_tp_data> iloop_tp_queue;
 
-bool CheckSoundDistance(NJS_VECTOR* position, float radius)
+bool CheckSoundDistance(Sint32 id, NJS_VECTOR* position)
 {
+	auto entry = GetMLTSoundEntry(id);
+
+	const float radius = entry && entry->DefaultDistance != 0.0f ? entry->DefaultDistance : 600.0f;
+	
 	for (int i = 0; i < 2; ++i)
 	{
 		if (MainCharObj1[i])
@@ -139,38 +146,47 @@ bool CheckSoundExists(Sint32 id, Sint32 tone)
 	return false;
 }
 
-Sint8 dsPlay_timer_v_437590_r(Sint32 tone, NJS_POINT3* pos, Sint32 id, Sint8 bank, Sint8 volume, Sint16 timer)
+Sint8 dsPlay_timer_v_437590_r(Sint32 tone, NJS_POINT3* pos, Sint32 id, Sint8 pri, Sint8 volume, Sint16 timer)
 {
-	if (CheckSoundDistance(pos, 600.0f))
+	if (CheckSoundDistance(tone, pos))
 	{
-		return dsPlay_timer_v_437590_h.Original(tone, pos, id, bank, volume, timer);
+		return dsPlay_timer_v_437590_h.Original(tone, pos, id, pri, volume, timer);
 	}
 	return -1;
 }
 
-Sint8 dsPlay_timer_v_437710_r(Sint32 tone, NJS_POINT3* pos, Sint32 id, Sint8 bank, Sint8 volume, Sint16 timer)
+Sint8 dsPlay_timer_v_437710_r(Sint32 tone, NJS_POINT3* pos, Sint32 id, Sint8 pri, Sint8 volume, Sint16 timer)
 {
-	if (CheckSoundDistance(pos, 600.0f))
+	if (CheckSoundDistance(tone, pos))
 	{
-		return dsPlay_timer_v_437710_h.Original(tone, pos, id, bank, volume, timer);
+		return dsPlay_timer_v_437710_h.Original(tone, pos, id, pri, volume, timer);
 	}
 	return -1;
 }
 
-Sint8 dsPlay_timer_v_437BB0_r(task* tp, Sint32 tone, Sint8 volume, Sint16 timer)
+Sint8 dsPlay_timer_tp_437BB0_r(task* tp, Sint32 tone, Sint8 volume, Sint16 timer)
 {
-	if (tp && tp->Data1.twp && CheckSoundDistance(&tp->Data1.twp->pos, 600.0f))
+	if (tp && tp->Data1.twp && CheckSoundDistance(tone, &tp->Data1.twp->pos))
 	{
-		return dsPlay_timer_v_437BB0_h.Original(tp, tone, volume, timer);
+		return dsPlay_timer_tp_437BB0_h.Original(tp, tone, volume, timer);
 	}
 	return -1;
 }
 
 Sint8 dsPlay_timer_v_437D10_r(Sint32 tone, NJS_POINT3* pos, Sint32 id, Sint8 volume, Sint16 timer)
 {
-	if (CheckSoundDistance(pos, 600.0f))
+	if (CheckSoundDistance(tone, pos))
 	{
 		return dsPlay_timer_v_437D10_h.Original(tone, pos, id, volume, timer);
+	}
+	return -1;
+}
+
+Sint8 dsPlay_oneshsot_v_r(Sint32 tone, NJS_POINT3* pos, Sint32 id, Sint8 pri, Sint8 volume)
+{
+	if (CheckSoundDistance(tone, pos))
+	{
+		return dsPlay_oneshsot_v_h.Original(tone, pos, id, pri, volume);
 	}
 	return -1;
 }
@@ -263,8 +279,11 @@ void Sound_Init(const IniFile* config)
 		// timer calls (continuous play until the function stops getting called)
 		dsPlay_timer_v_437590_h.Hook(dsPlay_timer_v_437590_r);
 		dsPlay_timer_v_437710_h.Hook(dsPlay_timer_v_437710_r);
-		dsPlay_timer_v_437BB0_h.Hook(dsPlay_timer_v_437BB0_r);
+		dsPlay_timer_tp_437BB0_h.Hook(dsPlay_timer_tp_437BB0_r);
 		dsPlay_timer_v_437D10_h.Hook(dsPlay_timer_v_437D10_r);
+
+		// oneshot calls (played once, stays 120 frames in queue)
+		dsPlay_oneshsot_v_h.Hook(dsPlay_oneshsot_v_r);
 
 		// iloop calls (continuous play, call dsStop to stop)
 		dsPlay_iloop_v_h.Hook(dsPlay_iloop_v_r);
@@ -282,5 +301,6 @@ void Sound_Init(const IniFile* config)
 		WriteData((int32_t*)0x436C8F, 43);
 		WriteData((int8_t*)0x436CC4, (int8_t)43);
 		WriteData((int8_t*)0x436CE7, (int8_t)43);
+		WriteData((int8_t*)0x4387CB, (int8_t)43);
 	}
 }
