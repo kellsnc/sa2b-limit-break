@@ -258,26 +258,29 @@ void dsSoundServer_r()
 
 void Sound_Init(const IniFile* config)
 {
-	// timer calls (continuous play until the function stops getting called)
-	dsPlay_timer_v_437590_h.Hook(dsPlay_timer_v_437590_r);
-	dsPlay_timer_v_437710_h.Hook(dsPlay_timer_v_437710_r);
-	dsPlay_timer_v_437BB0_h.Hook(dsPlay_timer_v_437BB0_r);
-	dsPlay_timer_v_437D10_h.Hook(dsPlay_timer_v_437D10_r);
+	if (config->getBool("Limits", "Sounds", true))
+	{
+		// timer calls (continuous play until the function stops getting called)
+		dsPlay_timer_v_437590_h.Hook(dsPlay_timer_v_437590_r);
+		dsPlay_timer_v_437710_h.Hook(dsPlay_timer_v_437710_r);
+		dsPlay_timer_v_437BB0_h.Hook(dsPlay_timer_v_437BB0_r);
+		dsPlay_timer_v_437D10_h.Hook(dsPlay_timer_v_437D10_r);
 
-	// iloop calls (continuous play, call dsStop to stop)
-	dsPlay_iloop_v_h.Hook(dsPlay_iloop_v_r);
-	dsPlay_iloop_tp_h.Hook(dsPlay_iloop_tp_r);
-	dsStop_num_h.Hook(dsStop_num_r);
-	dsStop_id_h.Hook(dsStop_id_r);
-	dsStop_tone_id_h.Hook(dsStop_tone_id_r);
-	dsStop_all_h.Hook(dsStop_all_r);
-	dsSoundServer_h.Hook(dsSoundServer_r);
+		// iloop calls (continuous play, call dsStop to stop)
+		dsPlay_iloop_v_h.Hook(dsPlay_iloop_v_r);
+		dsPlay_iloop_tp_h.Hook(dsPlay_iloop_tp_r);
+		dsStop_num_h.Hook(dsStop_num_r);
+		dsStop_id_h.Hook(dsStop_id_r);
+		dsStop_tone_id_h.Hook(dsStop_tone_id_r);
+		dsStop_all_h.Hook(dsStop_all_r);
+		dsSoundServer_h.Hook(dsSoundServer_r);
 
-	// The game uses 3 regions of the sound queue (0-31 32-37 38-42)
-	// The code below remove these regions.
-	WriteData((int16_t*)0x436B20, (int16_t)0xE990);
-	WriteData((int8_t*)0x436BFA, (int8_t)0xEB);
-	WriteData((int32_t*)0x436C8F, 43);
-	WriteData((int8_t*)0x436CC4, (int8_t)43);
-	WriteData((int8_t*)0x436CE7, (int8_t)43);
+		// The game uses 3 regions of the sound queue (0-31 32-37 38-42)
+		// The code below remove these regions.
+		WriteData((int16_t*)0x436B20, (int16_t)0xE990);
+		WriteData((int8_t*)0x436BFA, (int8_t)0xEB);
+		WriteData((int32_t*)0x436C8F, 43);
+		WriteData((int8_t*)0x436CC4, (int8_t)43);
+		WriteData((int8_t*)0x436CE7, (int8_t)43);
+	}
 }

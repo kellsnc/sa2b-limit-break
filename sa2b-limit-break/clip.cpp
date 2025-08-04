@@ -4,7 +4,7 @@
 #include "FastFunctionHook.hpp"
 #include "clip.h"
 
-static Uint32 ClipDistanceMultiplier = 70;
+static Uint32 ClipDistanceMultiplier = 5;
 static Uint32 LandClipDistanceMultiplier = 5;
 static bool RemoveChunks = false;
 
@@ -26,12 +26,14 @@ DataPointer(COL**, pDisplayEntry, 0x1A5A2E4);
 
 Bool __cdecl CheckRangeXYZRP_r(NJS_VECTOR* from, Float x, Float y, Float z, Float dist)
 {
-	return CheckRangeXYZRP_h.Original(from, x, y, z, dist * ClipDistanceMultiplier);
+	dist = sqrtf(dist) * ClipDistanceMultiplier;
+	return CheckRangeXYZRP_h.Original(from, x, y, z, dist * dist);
 }
 
 Bool __cdecl CheckRange2PXYZRP_r(NJS_VECTOR* from, NJS_VECTOR* p2pos, Float x, Float y, Float z, Float dist)
 {
-	return CheckRange2PXYZRP_h.Original(from, p2pos, x, y, z, dist * ClipDistanceMultiplier);
+	dist = sqrtf(dist) * ClipDistanceMultiplier;
+	return CheckRange2PXYZRP_h.Original(from, p2pos, x, y, z, dist * dist);
 }
 
 void __cdecl ListGroundForDrawing_r()
@@ -108,17 +110,18 @@ void __cdecl ListGroundForDrawing_r()
 
 void Clip_Init(const IniFile* config)
 {
-	if (config->getBool("Clip", "ClipDist", true))
+	ClipDistanceMultiplier = config->getInt("Clip", "ClipMultiplier", ClipDistanceMultiplier);
+	LandClipDistanceMultiplier = config->getInt("Clip", "LandMultiplier", LandClipDistanceMultiplier);
+	RemoveChunks = config->getBool("Clip", "RemoveChunks", RemoveChunks);
+
+	if (ClipDistanceMultiplier != 1)
 	{
-		ClipDistanceMultiplier = config->getInt("Clip", "ClipMultiplier", ClipDistanceMultiplier);
 		CheckRangeXYZRP_h.Hook(CheckRangeXYZRP_r);
 		CheckRange2PXYZRP_h.Hook(CheckRange2PXYZRP_r);
 	}
 	
-	if (config->getBool("Clip", "LandDist", true))
+	if (LandClipDistanceMultiplier != 1 || RemoveChunks)
 	{
-		LandClipDistanceMultiplier = config->getInt("Clip", "LandMultiplier", LandClipDistanceMultiplier);
-		RemoveChunks = config->getBool("Clip", "RemoveChunks", RemoveChunks);
 		WriteJump(ListGroundForDrawing, ListGroundForDrawing_r);
 	}
 }
