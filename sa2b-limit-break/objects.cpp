@@ -2,6 +2,7 @@
 #include "SA2ModLoader.h"
 #include "IniFile.hpp"
 #include "FastFunctionHook.hpp"
+#include "utility.h"
 #include "objects.h"
 
 // Patch objects relying on old clip behavior
@@ -11,27 +12,6 @@ DataArray(task*, ElvTp, 0x1AEDE40, 5);
 
 FastFunctionHookPtr<TaskFuncPtr> OElv_h(0x609B60);
 FastFunctionHookPtr<TaskFuncPtr> Rocket_Exec_h(0x6D50F0);
-
-// Check if a task is within vanilla clip distance
-bool CheckRangeVanilla(task* tp)
-{
-	taskwk* twp = tp->Data1.twp;
-	for (int i = 0; i < 2; ++i)
-	{
-		if (playertwp[i])
-		{
-			Float x = playertwp[i]->pos.x - twp->pos.x;
-			Float y = playertwp[i]->pos.y - twp->pos.y;
-			Float z = playertwp[i]->pos.z - twp->pos.z;
-
-			if (x * x + y * y + z * z < (tp->ocp ? tp->ocp->fRangeOut : 168100.0f))
-			{
-				return true;
-			}
-		}
-	}
-	return false;
-}
 
 // Fix mistake in Prison Lane elevator init function that incorrectly writes to its task array
 void OElv_r(task* tp)
@@ -54,7 +34,7 @@ void Rocket_Exec_r(task* tp)
 	if (twp && twp->mode == 1)
 	{
 		CheckRangeOut(tp);
-		if (!CheckRangeVanilla(tp))
+		if (CheckRange(tp))
 		{
 			return; // don't run opening behavior if too far
 		}

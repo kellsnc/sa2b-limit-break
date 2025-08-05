@@ -2,15 +2,18 @@
 #include "SA2ModLoader.h"
 #include "IniFile.hpp"
 #include "FastFunctionHook.hpp"
+#include "utility.h"
 #include "clip.h"
 
 static Uint32 ClipDistanceMultiplier = 5;
 static Uint32 LandClipDistanceMultiplier = 5;
 static bool RemoveChunks = false;
+static bool ClipLogic = false;
 
 FastFunctionHook<void> ListGroundForDrawing_h(0x47CAE0);
 FastUsercallHookPtr<Bool(*)(NJS_VECTOR*, Float, Float, Float, Float), rEAX, rECX, stack4, stack4, stack4, stack4> CheckRangeXYZRP_h(0x488340);
 FastUsercallHookPtr<Bool(*)(NJS_VECTOR*, NJS_VECTOR*, Float, Float, Float, Float), rEAX, rECX, stack4, stack4, stack4, stack4> CheckRange2PXYZRP_h(0x4881F0);
+FastUsercallHookPtr<Bool(*)(task*, Float), rEAX, rEDX, stack4> CheckRangeOutWithR_h(0x488C80);
 
 UsercallFunctionPtr<int(*)(int fallback, float x, float z), rEAX, rECX, stack4, stack4> GetBlockbitFromMap(0x47C8D0);
 
@@ -34,6 +37,46 @@ Bool __cdecl CheckRange2PXYZRP_r(NJS_VECTOR* from, NJS_VECTOR* p2pos, Float x, F
 {
 	dist = sqrtf(dist) * ClipDistanceMultiplier;
 	return CheckRange2PXYZRP_h.Original(from, p2pos, x, y, z, dist * dist);
+}
+
+Bool __cdecl CheckRangeOutWithR_r(task* tp, Float fRange)
+{
+	if (fRange == 0.0f)
+	{
+		return 0;
+	}
+
+	if (tp->ocp && (tp->ocp->ssCondition & 8))
+	{
+		return 0;
+	}
+
+	int ret = 0;
+
+	// If ClipLogic is enabled, and the object is a SET object with a display
+	if (ClipLogic && tp->ocp && tp->ocp->pObjEditEntry && tp->disp && tp->Data1.twp)
+	{
+		if (!CheckRangeWithR(tp, fRange))
+		{
+			// Within vanilla clip range, logic can run and no need to check for culling
+			return 0;
+		}
+		else
+		{
+			// Outside vanilla range, do not run task logic and check for culling
+			ret = 1;
+		}
+	}
+
+	// Check for culling with new extended range
+	Float new_range = sqrtf(fRange) * ClipDistanceMultiplier;
+	if (CheckRangeWithR(tp, new_range * new_range))
+	{
+		tp->exec = (TaskFuncPtr)DeleteObject_;
+		return 1;
+	}
+
+	return ret;
 }
 
 void __cdecl ListGroundForDrawing_r()
@@ -113,14 +156,16 @@ void Clip_Init(const IniFile* config)
 	ClipDistanceMultiplier = config->getInt("Clip", "ClipMultiplier", ClipDistanceMultiplier);
 	LandClipDistanceMultiplier = config->getInt("Clip", "LandMultiplier", LandClipDistanceMultiplier);
 	RemoveChunks = config->getBool("Clip", "RemoveChunks", RemoveChunks);
+	ClipLogic = config->getBool("Clip", "ClipLogic", ClipLogic);
 
-	if (ClipDistanceMultiplier != 1)
+	if (ClipDistanceMultiplier > 1)
 	{
 		CheckRangeXYZRP_h.Hook(CheckRangeXYZRP_r);
 		CheckRange2PXYZRP_h.Hook(CheckRange2PXYZRP_r);
+		CheckRangeOutWithR_h.Hook(CheckRangeOutWithR_r);
 	}
 	
-	if (LandClipDistanceMultiplier != 1 || RemoveChunks)
+	if (LandClipDistanceMultiplier > 1 || RemoveChunks)
 	{
 		WriteJump(ListGroundForDrawing, ListGroundForDrawing_r);
 	}
