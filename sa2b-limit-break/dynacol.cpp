@@ -103,21 +103,17 @@ void RemoveObjInfo(NJS_OBJECT* pObject)
 
 void WithdrawCollisionEntry_r(task* pTask, NJS_OBJECT* pObject)
 {
-	auto pred = [pTask](const _OBJ_LANDCOLL& a) -> bool
+	for (auto it = mobile_list.begin(); it != mobile_list.end(); ++it)
 	{
-		return a.pTask == pTask;
-	};
-
-	const auto it = std::remove_if(mobile_list.begin(), mobile_list.end(), pred);
-
-	if (it != mobile_list.end())
-	{
-		RemoveObjInfo(pObject);
-		mobile_list.erase(it);
+		if (it->pTask == pTask)
+		{
+			RemoveObjInfo(pObject);
+			mobile_list.erase(it);
+			MobileColList = (DynColInfo*)mobile_list.data();
+			MobileColList_Count = mobile_list.size();
+			break;
+		}
 	}
-
-	MobileColList = (DynColInfo*)mobile_list.data();
-	MobileColList_Count = mobile_list.size();
 }
 
 void Dynacol_Init(const IniFile* config)
