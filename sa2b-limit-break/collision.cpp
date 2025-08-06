@@ -4,7 +4,7 @@
 #include "FastFunctionHook.hpp"
 #include "collision.h"
 
-FastcallFunctionPointer(signed int, sub_46DE60, (int a1, int a2), 0x46DE60);
+UsercallFunctionPtr<int(*)(int), rEAX, rEDX> GetRivalPlayerNumber(0x46DE60);
 
 struct TargetThing
 {
@@ -376,137 +376,87 @@ static void __declspec(naked) ScanMechTargets_asm()
 	}
 }
 
-signed int sub_486D60(int a1)
+bool sub_74A140(EntityData1* data, MechEggmanCharObj2* eggco2)
 {
-	if (!a1)
+	NJS_VECTOR vec1;
+	NJS_VECTOR vec2;
+
+	if (data->Action && data->Action != 1 && data->Action != 17)
 	{
-		return TargetCollisions_LastCount;
-	}
-	else if (a1 == 1)
-	{
-		return EnemiesCollisions_LastCount;
-	}
-
-	return -1;
-}
-
-bool sub_74A140(EntityData1* data, MechEggmanCharObj2* eggco2) {
-	int v2; // ecx
-	char v3; // al
-	signed int v4; // eax
-	MechEggmanCharObj2* v5; // eax
-	Float v6; // ecx
-	Float v7; // edx
-	Float v8; // eax
-	int v10; // ecx
-	ObjectMaster** v11; // ebx
-	int v12; // eax
-	CollisionInfo* v14; // ecx
-	ObjectMaster* v15; // eax
-	EntityData1* v16; // eax
-	CollisionData* v17; // ecx
-	signed int v18; // [esp+14h] [ebp-20h]
-	signed int v19; // [esp+18h] [ebp-1Ch]
-	NJS_VECTOR vec1; // [esp+1Ch] [ebp-18h]
-	NJS_VECTOR vec2; // [esp+28h] [ebp-Ch]
-
-	if (data->Action && data->Action != 1 && data->Action != 17) {
 		return 0;
 	}
-	
-	int idk = sub_46DE60(0, eggco2->base.PlayerNum);
 
-	if (idk == -1) {
-		goto LABEL_23;
+	auto RivalPlayerNumber = GetRivalPlayerNumber(eggco2->base.PlayerNum);
+	if (RivalPlayerNumber != -1)
+	{
+		MechEggmanCharObj2* rival_co2 = (MechEggmanCharObj2*)MainCharObj2[RivalPlayerNumber];
+		vec1 = rival_co2->mechtorsotop0_vec;
+		vec2 = { 1.0, 0.0, 0.0 };
+		CalcVector_PlayerRot(data, &vec2);
+		vec2.x = vec2.x * 20.0f;
+		vec2.y = vec2.y * 20.0f;
+		vec2.z = vec2.z * 20.0f;
+		vec1.x = vec1.x - eggco2->mechtorsotop0_vec.x;
+		vec1.y = vec1.y - eggco2->mechtorsotop0_vec.y;
+		vec1.z = vec1.z - eggco2->mechtorsotop0_vec.z;
+		vec1.x = vec1.x - vec2.x;
+		vec1.y = vec1.y - vec2.y;
+		vec1.z = vec1.z - vec2.z;
+		if (njScalor(&vec1) < 15.0)
+		{
+			return 1;
+		}
 	}
 
-	v5 = (MechEggmanCharObj2*)MainCharObj2[idk];
-	vec1 = *(NJS_VECTOR*)v5->field_1BC[92];
-	vec2 = { 1, 0, 0 };
-	
-	CalcVector_PlayerRot(data, &vec2);
-
-	vec2 = { vec2.x * 20.0f, vec2.y * 20.0f, vec2.z * 20.0f };
-	
-	vec1.x = (v5->field_1BC[92] - v5->field_1BC[92]) - vec2.x;
-	vec1.y = (v5->field_1BC[96] - v5->field_1BC[96]) - vec2.y;
-	vec1.z = (v5->field_1BC[100] - v5->field_1BC[100]) - vec2.z;
-
-	if (njScalor(&vec1) >= 15.0f)
+	auto& list = entities[CollisionList::Targetable];
+	if (!list.size())
 	{
-	LABEL_23:
-		v10 = 2;
-		v19 = 2;
-		while (1)
+		list = entities[CollisionList::Enemies];
+		if (!list.size())
 		{
-			if (v10 == 2)
-			{
-				v11 = old_entities[CollisionList::Targetable].data();
-				v12 = 0;
-			}
-			else
-			{
-				v11 = old_entities[CollisionList::Enemies].data();
-				v12 = 1;
-			}
-			v18 = sub_486D60(v12);
-			if (v18 > 0)
-			{
-				break;
-			}
-		LABEL_19:
-			v10 = v18 - 1;
-			v19 = v10;
-			if (v10 <= 0)
-			{
-				return 0;
-			}
+			return 0;
 		}
-		while (1)
+	}
+
+	for (auto& item : list)
+	{
+		CollisionInfo* v14 = item->Data1.Entity->Collision;
+		if (v14)
 		{
-			v14 = v11[0]->Data1.Entity->Collision;
-			++v11;
-			if (v14)
+			ObjectMaster* v15 = v14->Object;
+			if (v15)
 			{
-				v15 = v14->Object;
-				if (v15)
+				EntityData1* v16 = v15->Data1.Entity;
+				if (v16)
 				{
-					v16 = v15->Data1.Entity;
-					if (v16)
+					CollisionData* v17 = v14->CollisionArray;
+					if (v17->kind != 12)
 					{
-						v17 = v14->CollisionArray;
-						if (v17->kind != 12)
+						ColliCalcCenter(v16, v17, &vec1);
+						vec2.x = 1.0;
+						vec2.z = 0.0;
+						vec2.y = 0.0;
+						CalcVector_PlayerRot(data, &vec2);
+						vec2.x = vec2.x * 30.0f;
+						vec2.y = vec2.y * 30.0f;
+						vec2.z = vec2.z * 30.0f;
+						vec1.x = vec1.x - eggco2->mechtorsotop0_vec.x;
+						vec1.y = vec1.y - eggco2->mechtorsotop0_vec.y;
+						vec1.z = vec1.z - eggco2->mechtorsotop0_vec.z;
+						vec1.x = vec1.x - vec2.x;
+						vec1.y = vec1.y - vec2.y;
+						vec1.z = vec1.z - vec2.z;
+						if (njScalor(&vec1) < 15.0f)
 						{
-							ColliCalcCenter(v16, v17, &vec1);
-							vec2.x = 1.0;
-							vec2.z = 0.0;
-							vec2.y = 0.0;
-							CalcVector_PlayerRot(data, &vec2);
-							vec2.x = vec2.x * 30.0;
-							vec2.y = vec2.y * 30.0;
-							vec2.z = 30.0 * vec2.z;
-							vec1.x = vec1.x - *&eggco2->field_1BC[92];
-							vec1.y = vec1.y - *&eggco2->field_1BC[96];
-							vec1.z = vec1.z - *&eggco2->field_1BC[100];
-							vec1.x = vec1.x - vec2.x;
-							vec1.y = vec1.y - vec2.y;
-							vec1.z = vec1.z - vec2.z;
-							if (njScalor(&vec1) < 15.0)
-							{
-								break;
-							}
+							return 1;
 						}
 					}
 				}
 			}
-			if (--v18 <= 0)
-			{
-				v18 = v19;
-				goto LABEL_19;
-			}
 		}
 	}
-	return 1;
+
+	return 0;
 }
 
 void Collisions_Init(const IniFile* config)
