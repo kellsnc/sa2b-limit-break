@@ -118,7 +118,7 @@ bool CheckSoundDistance(Sint32 id, NJS_VECTOR* position)
 	
 	for (int i = 0; i < 2; ++i)
 	{
-		if (MainCharObj1[i])
+		if (pCameraLocations[i])
 		{
 			Float x = pCameraLocations[i]->pos.x - position->x;
 			Float y = pCameraLocations[i]->pos.y - position->y;
