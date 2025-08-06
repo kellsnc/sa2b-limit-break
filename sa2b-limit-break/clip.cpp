@@ -12,7 +12,7 @@ static bool ClipLogic = false;
 
 FastFunctionHook<void> ListGroundForDrawing_h(0x47CAE0);
 FastUsercallHookPtr<Bool(*)(NJS_VECTOR*, Float, Float, Float, Float), rEAX, rECX, stack4, stack4, stack4, stack4> CheckRangeXYZRP_h(0x488340);
-FastUsercallHookPtr<Bool(*)(NJS_VECTOR*, NJS_VECTOR*, Float, Float, Float, Float), rEAX, rECX, stack4, stack4, stack4, stack4> CheckRange2PXYZRP_h(0x4881F0);
+FastUsercallHookPtr<Bool(*)(NJS_VECTOR*, NJS_VECTOR*, Float, Float, Float, Float), rEAX, rEAX, rECX, stack4, stack4, stack4, stack4> CheckRange2PXYZRP_h(0x4881F0);
 FastUsercallHookPtr<Bool(*)(task*, Float), rEAX, rEDX, stack4> CheckRangeOutWithR_h(0x488C80);
 
 UsercallFunctionPtr<int(*)(int fallback, float x, float z), rEAX, rECX, stack4, stack4> GetBlockbitFromMap(0x47C8D0);
