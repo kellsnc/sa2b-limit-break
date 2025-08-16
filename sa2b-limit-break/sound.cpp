@@ -295,12 +295,11 @@ void Sound_Init(const IniFile* config)
 		dsSoundServer_h.Hook(dsSoundServer_r);
 
 		// The game uses 3 regions of the sound queue (0-31 32-37 38-42)
-		// The code below remove these regions.
-		WriteData((int16_t*)0x436B20, (int16_t)0xE990);
+		// Since the second range is useless, the code below expands the first range to 0-37.
 		WriteData((int8_t*)0x436BFA, (int8_t)0xEB);
-		WriteData((int32_t*)0x436C8F, 43);
-		WriteData((int8_t*)0x436CC4, (int8_t)43);
-		WriteData((int8_t*)0x436CE7, (int8_t)43);
-		WriteData((int8_t*)0x4387CB, (int8_t)43);
+		WriteData((int32_t*)0x436C8F, 38);
+		WriteData((int8_t*)0x436CC4, (int8_t)38);
+		WriteData((int8_t*)0x436CE7, (int8_t)38);
+		WriteData((int8_t*)0x436B0E, (int8_t)0); // Prevent some bank 6 sounds from getting in the 3rd range.
 	}
 }
